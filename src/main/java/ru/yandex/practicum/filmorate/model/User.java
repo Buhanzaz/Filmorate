@@ -9,8 +9,8 @@ import java.time.LocalDate;
 @Data
 public class User {
 
-    @PositiveOrZero(message = "Id cannot be a negative number")
-    private int id;
+    //@PositiveOrZero(message = "Id cannot be a negative number")
+    private String id;
 
     @NotBlank
     @NotNull

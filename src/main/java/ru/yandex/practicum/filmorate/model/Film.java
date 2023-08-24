@@ -11,8 +11,8 @@ import java.time.LocalDate;
 @Data
 @AllArgsConstructor
 public class Film {
-    @PositiveOrZero(message = "Id cannot be a negative number")
-    private int id;
+    //@PositiveOrZero(message = "Id cannot be a negative number")
+    private String id;
 
     @NotBlank(message = "Name film is mandatory")
     private final String name;
