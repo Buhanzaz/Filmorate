@@ -8,7 +8,10 @@ import java.util.Map;
 @Component
 public interface FilmStorage {
     Film add(Film film);
+
     void put(Film film);
+
     Map<Integer, Film> getFilms();
+
     Film getFilm(int id);
 }

@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.validation;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
+
 import ru.yandex.practicum.filmorate.annotation.CorrectLogin;
 
 public class LoginValidator implements ConstraintValidator<CorrectLogin, String> {

@@ -46,7 +46,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public Optional<User> getRequestUser(@PathVariable @Min(1)int id) {
+    public Optional<User> getRequestUser(@PathVariable @Min(1) int id) {
         Optional<User> user = Optional.ofNullable(userStorage.getUser(id));
 
         if (user.isEmpty()) {
@@ -58,13 +58,13 @@ public class UserController {
     }
 
     @GetMapping("/{id}/friends")
-    public List<User> getRequestAllUserFriends(@PathVariable @Min(1)int id) {
+    public List<User> getRequestAllUserFriends(@PathVariable @Min(1) int id) {
         log.debug("Show all friends.");
         return userService.listAllFriends(id);
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
-    public List<User> getRequestOfMutualFriends(@PathVariable @Min(1)int id, @PathVariable int otherId) {
+    public List<User> getRequestOfMutualFriends(@PathVariable @Min(1) int id, @PathVariable int otherId) {
         log.debug("Show all mutual friends.");
         return userService.listOfMutualFriends(id, otherId);
     }
@@ -77,14 +77,14 @@ public class UserController {
     }
 
     @PutMapping("/{id}/friends/{friendId}")
-    public void putRequestAddFriend(@PathVariable @Min(1)int id, @PathVariable int friendId) {
+    public void putRequestAddFriend(@PathVariable @Min(1) int id, @PathVariable int friendId) {
         userService.addFriend(id, friendId);
         log.debug("User {} added to friend {}", userStorage.getUser(id).getName(),
                 userStorage.getUser(friendId).getName());
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
-    public void deleteRequestDeleteFriend(@PathVariable @Min(1)int id, @PathVariable int friendId) {
+    public void deleteRequestDeleteFriend(@PathVariable @Min(1) int id, @PathVariable int friendId) {
         userService.removeFriend(id, friendId);
         log.debug("User {} delete to friend {}", userStorage.getUser(id).getName(),
                 userStorage.getUser(friendId).getName());

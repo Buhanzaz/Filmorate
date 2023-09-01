@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.annotation;
 
 import javax.validation.Constraint;
 import javax.validation.Payload;
+
 import ru.yandex.practicum.filmorate.validation.LoginValidator;
 
 import java.lang.annotation.ElementType;
@@ -14,7 +15,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = LoginValidator.class)
 public @interface CorrectLogin {
-
     Class<?>[] groups() default {};
 
     Class<? extends Payload>[] payload() default {};

@@ -38,8 +38,8 @@ public class Film {
     @SneakyThrows
     public void addLike(int idUser) {
         try {
-                usersWhoLikeIt.add(idUser);
-                likes++;
+            usersWhoLikeIt.add(idUser);
+            likes++;
         } catch (Exception e) {
             throw new FilmException("Have you already liked this movie");
         }

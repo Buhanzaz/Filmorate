@@ -47,7 +47,7 @@ public class FilmService {
     }
 
     @SneakyThrows
-    private void checkingTheExistenceOfUsersAndFilms(int idUser, int idFilm)  {
+    private void checkingTheExistenceOfUsersAndFilms(int idUser, int idFilm) {
         if (!userStorage.getUsers().containsKey(idUser)) {
             throw new FilmException("The user with this id was not found.");
         }

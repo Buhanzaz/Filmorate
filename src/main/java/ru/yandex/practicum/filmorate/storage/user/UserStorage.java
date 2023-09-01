@@ -8,8 +8,12 @@ import java.util.Map;
 @Component
 public interface UserStorage {
     User add(User user);
+
     void put(User user);
+
     Map<Integer, User> getUsers();
+
     User getUser(int id);
+
     void setUserNameByLogin(User user, String text);
 }
