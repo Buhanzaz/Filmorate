@@ -44,8 +44,4 @@ public class InMemoryFilmStorage implements FilmStorage {
     public Film getFilm(int id) {
         return films.get(id);
     }
-
-    public List<Film> getSortedTopTenFilms() {
-        return new ArrayList<>(films.values());
-    }
 }
