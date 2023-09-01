@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.UserException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.UuidGenerator;
+import ru.yandex.practicum.filmorate.storage.IdGenerator;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -16,10 +16,10 @@ import java.util.Map;
 @Repository
 public class InMemoryUserStorage implements UserStorage {
     protected final Map<Integer, User> users;
-    private final UuidGenerator uuidGenerator;
+    private final IdGenerator uuidGenerator;
 
     @Autowired
-    public InMemoryUserStorage(UuidGenerator uuidGenerator) {
+    public InMemoryUserStorage(IdGenerator uuidGenerator) {
         this.users = new HashMap<>();
         this.uuidGenerator = uuidGenerator;
     }

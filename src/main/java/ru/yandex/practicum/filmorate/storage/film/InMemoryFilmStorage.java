@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.UserException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.storage.UuidGenerator;
+import ru.yandex.practicum.filmorate.storage.IdGenerator;
 
 import java.util.*;
 
@@ -13,10 +13,10 @@ import java.util.*;
 @Repository
 public class InMemoryFilmStorage implements FilmStorage {
     private final Map<Integer, Film> films;
-    private final UuidGenerator uuidGenerator;
+    private final IdGenerator uuidGenerator;
 
     @Autowired
-    public InMemoryFilmStorage(UuidGenerator uuidGenerator) {
+    public InMemoryFilmStorage(IdGenerator uuidGenerator) {
         this.films = new HashMap<>();
         this.uuidGenerator = uuidGenerator;
     }
