@@ -12,20 +12,19 @@ import java.util.Set;
 
 @Data
 public class User {
-
     @PositiveOrZero(message = "Id cannot be a negative number")
     private int id;
-
-    @NotBlank
-    @NotNull
-    @Email
-    private final String email;
 
     @NotBlank
     @NotNull
     private final String login;
 
     private String name;
+
+    @NotBlank
+    @NotNull
+    @Email
+    private final String email;
 
     @PastOrPresent
     private final LocalDate birthday;
