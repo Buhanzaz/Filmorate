@@ -1,13 +1,15 @@
 package ru.yandex.practicum.filmorate.exception;
 
-public class UserException extends RuntimeException {
+import java.io.IOException;
+
+public class FilmException extends IOException {
     String error;
     String description;
-    public UserException(String message) {
+    public FilmException(String message) {
         super(message);
     }
 
-    public UserException(String error, String description) {
+    public FilmException(String error, String description) {
         this.error = error;
         this.description = description;
     }
