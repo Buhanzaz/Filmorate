@@ -24,6 +24,7 @@ import java.util.Optional;
 public class FilmController {
     private FilmStorage filmStorage;
     private FilmService filmService;
+
     @Autowired
     public FilmController(FilmStorage filmStorage, FilmService filmService) {
         this.filmStorage = filmStorage;
@@ -39,7 +40,7 @@ public class FilmController {
 
     @GetMapping()
     public List<Film> getRequestAllFilm() {
-        List<Film> allFilm =new ArrayList<>(filmStorage.getFilms().values());
+        List<Film> allFilm = new ArrayList<>(filmStorage.getFilms().values());
         log.debug("Amount of movies: {}", allFilm.size());
         return allFilm;
     }
@@ -51,7 +52,7 @@ public class FilmController {
         if (film.isEmpty()) {
             throw new FilmException("The film doesn't exist.");
         }
-        log.debug("The movie is found{}: ", film.get().getName());
+        log.debug("The movie is found {}", film.get().getName());
         return film;
     }
 
@@ -76,7 +77,7 @@ public class FilmController {
 
 
     @DeleteMapping("/{id}/like/{userId}")
-    public void deleteRequestDeleteLike(@PathVariable @Min(1)int id, @PathVariable int userId) {
+    public void deleteRequestDeleteLike(@PathVariable @Min(1) int id, @PathVariable int userId) {
         filmService.removeLike(userId, id);
         log.debug("User {} delete a like to the movie {}: ", userId, filmStorage.getFilm(id).getName());
     }
