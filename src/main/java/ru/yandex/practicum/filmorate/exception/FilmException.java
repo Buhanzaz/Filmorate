@@ -5,6 +5,7 @@ import java.io.IOException;
 public class FilmException extends IOException {
     String error;
     String description;
+
     public FilmException(String message) {
         super(message);
     }
