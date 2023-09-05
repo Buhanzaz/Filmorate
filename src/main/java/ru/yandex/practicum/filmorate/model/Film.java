@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.model;
 
 import javax.validation.constraints.*;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import org.hibernate.validator.constraints.Length;
 import ru.yandex.practicum.filmorate.annotation.AfterDate;
@@ -29,7 +30,7 @@ public class Film {
     @PositiveOrZero(message = "Duration cannot be a negative number")
     private final int duration;
 
-    @Setter(AccessLevel.NONE)
+    @JsonIgnore
     private Set<Integer> usersWhoLikeIt = new HashSet<>();
 
     @Setter(AccessLevel.NONE)

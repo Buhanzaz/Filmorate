@@ -3,9 +3,7 @@ package ru.yandex.practicum.filmorate.controller;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.FilmException;
@@ -20,12 +18,10 @@ import java.util.Optional;
 @Slf4j
 @RestController
 @RequestMapping("/films")
-@RequiredArgsConstructor
 public class FilmController {
-    private FilmStorage filmStorage;
-    private FilmService filmService;
+    private final FilmStorage filmStorage;
+    private final FilmService filmService;
 
-    @Autowired
     public FilmController(FilmStorage filmStorage, FilmService filmService) {
         this.filmStorage = filmStorage;
         this.filmService = filmService;

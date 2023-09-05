@@ -1,10 +1,11 @@
 package ru.yandex.practicum.filmorate.exception;
 
-import java.io.IOException;
+import lombok.Getter;
 
-public class FilmException extends IOException {
-    String error;
-    String description;
+@Getter
+public class FilmException extends RuntimeException {
+    private String error;
+    private String description;
 
     public FilmException(String message) {
         super(message);

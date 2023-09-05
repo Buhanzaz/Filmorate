@@ -1,8 +1,11 @@
 package ru.yandex.practicum.filmorate.exception;
 
+import lombok.Getter;
+
+@Getter
 public class UserException extends RuntimeException {
-    String error;
-    String description;
+    private String error;
+    private String description;
 
     public UserException(String message) {
         super(message);
@@ -12,4 +15,5 @@ public class UserException extends RuntimeException {
         this.error = error;
         this.description = description;
     }
+
 }
