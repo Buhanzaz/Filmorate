@@ -38,7 +38,7 @@ public class UserControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andReturn();
 
-        assertEquals("[{\"id\":1,\"login\":\"dolore\",\"name\":\"Nick Name\",\"email\":\"mail@mail.ru\",\"birthday\":\"1946-08-20\",\"idFriends\":[]}]", result.getResponse().getContentAsString());
+        assertEquals("[{\"id\":1,\"login\":\"dolore\",\"name\":\"Nick Name\",\"email\":\"mail@mail.ru\",\"birthday\":\"1946-08-20\"}]", result.getResponse().getContentAsString());
     }
 
     @Test
