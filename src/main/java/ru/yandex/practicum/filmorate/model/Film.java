@@ -48,13 +48,9 @@ public class Film {
 
     @SneakyThrows
     public void removeLike(int idUser) {
-        try {
-            if (usersWhoLikeIt.contains(idUser)) {
-                usersWhoLikeIt.remove(idUser);
-                likes--;
-            }
-        } catch (Exception e) {
-            throw new FilmException("Have you already liked this movie");
+        if (usersWhoLikeIt.contains(idUser)) {
+            usersWhoLikeIt.remove(idUser);
+            likes--;
         }
     }
 

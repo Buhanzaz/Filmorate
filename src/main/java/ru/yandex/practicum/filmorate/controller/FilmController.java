@@ -42,7 +42,7 @@ public class FilmController {
     }
 
     @GetMapping("/{id}")
-    public Optional<Film> getRequestFilm(@PathVariable @Min(1) int id) throws FilmException {
+    public Optional<Film> getRequestFilm(@PathVariable @Min(1) int id){
         Optional<Film> film = Optional.ofNullable(filmStorage.getFilm(id));
 
         if (film.isEmpty()) {
@@ -81,6 +81,6 @@ public class FilmController {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public FilmException handleNullableCount(final FilmException e) {
-        return new FilmException("Ошибка с параметром count.", e.getMessage());
+        return new FilmException("Error with the count parameter.", e.getMessage());
     }
 }
