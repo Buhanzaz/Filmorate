@@ -42,7 +42,7 @@ public class FilmController {
     }
 
     @GetMapping("/{id}")
-    public Optional<Film> getRequestFilm(@PathVariable @Min(1) int id){
+    public Optional<Film> getRequestFilm(@PathVariable @Min(1) int id) {
         Optional<Film> film = Optional.ofNullable(filmStorage.getFilm(id));
 
         if (film.isEmpty()) {
