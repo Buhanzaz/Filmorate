@@ -31,6 +31,14 @@ public class Film {
     private final int duration;
 
     @JsonIgnore
+    @Setter(AccessLevel.NONE)
+    private Set<Genre> genres = new HashSet<>();
+
+    @JsonIgnore
+    @Setter(AccessLevel.NONE)
+    private RatingMpa mpa;
+
+    @JsonIgnore
     private Set<Integer> usersWhoLikeIt = new HashSet<>();
 
     @Setter(AccessLevel.NONE)
@@ -53,5 +61,4 @@ public class Film {
             likes--;
         }
     }
-
 }
