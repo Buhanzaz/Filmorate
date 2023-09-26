@@ -1,41 +1,45 @@
 package ru.yandex.practicum.filmorate.model;
 
-import javax.validation.constraints.*;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 
+import javax.validation.constraints.*;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
+@Builder(toBuilder = true)
 @Data
+@AllArgsConstructor
 public class User {
     @PositiveOrZero(message = "Id cannot be a negative number")
     private int id;
 
     @NotBlank
     @NotNull
-    private final String login;
+    private String login;
 
     private String name;
 
     @NotBlank
     @NotNull
     @Email
-    private final String email;
+    private String email;
 
     @PastOrPresent
-    private final LocalDate birthday;
+    @NotNull
+    private LocalDate birthday;
 
     @JsonIgnore
-    private Set<Integer> idFriends = new HashSet<>();
+    final private Set<Integer> friendIds = new HashSet<>();
 
-    public void addFriend(int idUser) {
-        idFriends.add(idUser);
+    public void addFriend(Integer id) {
+        friendIds.add(id);
     }
 
-    public void removeFriend(int idUser) {
-        idFriends.remove(idUser);
+    public void deleteFriend(Integer id) {
+        friendIds.remove(id);
     }
 }
