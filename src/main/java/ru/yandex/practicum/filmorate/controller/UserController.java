@@ -28,6 +28,7 @@ public class UserController {
 
     @PostMapping
     public User create(@Valid @RequestBody User user) {
+        preSave(user);
         userService.create(user);
         return user;
     }
@@ -66,5 +67,11 @@ public class UserController {
     @GetMapping("/{id}/friends/common/{otherId}")
     public List<User> getCommonFriends(@PathVariable Integer id, @PathVariable Integer otherId) {
         return userService.getCommonFriends(id, otherId);
+    }
+
+    private void preSave(User user) {
+        if (user.getName() == null) {
+            user.setName(user.getLogin());
+        }
     }
 }
