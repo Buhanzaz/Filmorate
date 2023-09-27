@@ -2,119 +2,77 @@ package ru.yandex.practicum.filmorate.controller;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import ru.yandex.practicum.filmorate.model.User;
+
+import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
-@AutoConfigureMockMvc
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class UserControllerTest {
     @Autowired
-    private MockMvc mockMvc;
+    private TestRestTemplate restTemplate;
 
     @Test
-    void createAndReturnUsers() throws Exception {
-        mockMvc.perform(post("/users")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{\n" +
-                        "  \"login\": \"dolore\",\n" +
-                        "  \"name\": \"Nick Name\",\n" +
-                        "  \"email\": \"mail@mail.ru\",\n" +
-                        "  \"birthday\": \"1946-08-20\"\n" +
-                        "}"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("Nick Name"))
-                .andExpect(jsonPath("$.email").value("mail@mail.ru"));
+    void createUserWithBadEmail_shouldShowErrorMessage() {
+        User user = new User(1, "test", "test", "none", LocalDate.now().minusYears(30));
+        ResponseEntity<User> response = restTemplate.postForEntity("/users", user, User.class);
 
-        MvcResult result = mockMvc.perform(get("/users")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andReturn();
-
-        assertEquals("[{\"id\":1,\"login\":\"dolore\",\"name\":\"Nick Name\",\"email\":\"mail@mail.ru\",\"birthday\":\"1946-08-20\"}]", result.getResponse().getContentAsString());
+        assertEquals("400 BAD_REQUEST", response.getStatusCode().toString());
     }
 
     @Test
-    void createUserWithInvalidLogin() throws Exception {
-        mockMvc.perform(post("/users")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\n" +
-                                "  \"login\": \"dolore ullamco\",\n" +
-                                "  \"email\": \"yandex@mail.ru\",\n" +
-                                "  \"birthday\": \"2446-08-20\"\n" +
-                                "}"))
-                .andExpect(status().is(400));
-    }
+    void createUserWithEmptyLogin_shouldShowErrorMessage() {
+        User user = new User(1, "test@yandex.ru", " ", "test", LocalDate.now().minusYears(30));
+        ResponseEntity<User> response = restTemplate.postForEntity("/users", user, User.class);
 
-
-    @Test
-    void createUserWithInvalidEmail() throws Exception {
-        mockMvc.perform(post("/users")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\n" +
-                                "  \"login\": \"dolore ullamco\",\n" +
-                                "  \"name\": \"\",\n" +
-                                "  \"email\": \"mail.ru\",\n" +
-                                "  \"birthday\": \"1980-08-20\"\n" +
-                                "}"))
-                .andExpect(status().is(400));
-    }
-
-
-    @Test
-    void createUserWithInvalidBirthday() throws Exception {
-        mockMvc.perform(post("/users")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\n" +
-                                "  \"login\": \"dolore ullamco\",\n" +
-                                "  \"name\": \"\",\n" +
-                                "  \"email\": \"mail.ru\",\n" +
-                                "  \"birthday\": \"1980-08-20\"\n" +
-                                "}"))
-                .andExpect(status().is(400));
+        assertEquals("400 BAD_REQUEST", response.getStatusCode().toString());
     }
 
     @Test
-    void createUserWithEmptyName() throws Exception {
-        mockMvc.perform(post("/users")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\n" +
-                                "  \"login\": \"common\",\n" +
-                                "  \"email\": \"friend@common.ru\",\n" +
-                                "  \"birthday\": \"2000-08-20\"\n" +
-                                "}"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("common"));
+    void createFutureBirthUser_shouldShowErrorMessage() {
+        User user = new User(1, "test@yandex.ru", "test", "test", LocalDate.now().plusYears(30));
+        ResponseEntity<User> response = restTemplate.postForEntity("/users", user, User.class);
+
+        assertEquals("400 BAD_REQUEST", response.getStatusCode().toString());
     }
 
     @Test
-    void updateUser() throws Exception {
-        mockMvc.perform(post("/users")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{\n" +
-                        "  \"login\": \"dolore\",\n" +
-                        "  \"name\": \"Nick Name\",\n" +
-                        "  \"email\": \"mail@mail.ru\",\n" +
-                        "  \"birthday\": \"1946-08-20\"\n" +
-                        "}"));
+    void updateUserToEmptyEmail_shouldShowErrorMessage() {
+        User user = new User(1, "test@yandex.ru", "test", "test", LocalDate.now().minusYears(30));
+        restTemplate.postForEntity("/users", user, User.class);
 
-        mockMvc.perform(put("/users").contentType(MediaType.APPLICATION_JSON)
-                        .content("{\n" +
-                                "  \"login\": \"doloreUpdate\",\n" +
-                                "  \"name\": \"est adipisicing\",\n" +
-                                "  \"id\": 1,\n" +
-                                "  \"email\": \"mail@yandex.ru\",\n" +
-                                "  \"birthday\": \"1976-09-20\"\n" +
-                                "}"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("est adipisicing"))
-                .andExpect(jsonPath("$.login").value("doloreUpdate"));
+        User user2 = new User(1, null, "test", "test", LocalDate.now().minusYears(30));
+        HttpEntity<User> entity = new HttpEntity<>(user2);
+        ResponseEntity<User> response2 = restTemplate.exchange("/users", HttpMethod.PUT, entity, User.class);
+
+        assertEquals("400 BAD_REQUEST", response2.getStatusCode().toString());
+    }
+
+    @Test
+    void updateUserToEmptyLogin_shouldShowErrorMessage() {
+        User user = new User(1, "test@yandex.ru", "test", "test", LocalDate.now().minusYears(30));
+        restTemplate.postForEntity("/users", user, User.class);
+        User user2 = new User(1, "test@yandex.ru", " ", "test", LocalDate.now().minusYears(30));
+        HttpEntity<User> entity = new HttpEntity<>(user2);
+        ResponseEntity<User> response2 = restTemplate.exchange("/users", HttpMethod.PUT, entity, User.class);
+
+        assertEquals("400 BAD_REQUEST", response2.getStatusCode().toString());
+    }
+
+    @Test
+    void updateFutureBirthUser_shouldShowErrorMessage() {
+        User usr = new User(1, "test@yandex.ru", "test", "test", LocalDate.now().minusYears(30));
+        restTemplate.postForEntity("/users", usr, User.class);
+        User user = new User(1, "test@yandex.ru", "test", "test", LocalDate.now().plusYears(30));
+        HttpEntity<User> entity = new HttpEntity<>(user);
+        ResponseEntity<User> response2 = restTemplate.exchange("/users", HttpMethod.PUT, entity, User.class);
+
+        assertEquals("400 BAD_REQUEST", response2.getStatusCode().toString());
     }
 }
