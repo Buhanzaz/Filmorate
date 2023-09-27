@@ -56,25 +56,29 @@ public class UserService {
     }
 
     public void addFriend(Integer userId, Integer friendId) {
+        checkUser(userId, friendId);
         storage.addFriend(userId, friendId);
 
         log.info("Friend successfully added");
     }
 
     public void removeFriend(Integer userId, Integer friendId) {
+        checkUser(userId, friendId);
         storage.removeFriend(userId, friendId);
         log.info("Friend successfully removed");
     }
 
     public List<User> getAllFriends(Integer userId) {
+        checkUser(userId, userId);
         List<User> result = storage.getFriendsById(userId);
         log.info("Friends of user with ID = " + userId + result);
         return result;
     }
 
-    public List<User> getCommonFriends(Integer user1Id, Integer user2Id) {
-        List<User> result = storage.getCommonFriends(user1Id, user2Id);
-        log.info("Common friends of users with ID " + " {} and {} {} ", user1Id, user2Id, result);
+    public List<User> getCommonFriends(Integer userId, Integer friendId) {
+        checkUser(userId, friendId);
+        List<User> result = storage.getCommonFriends(userId, friendId);
+        log.info("Common friends of users with ID " + " {} and {} {} ", userId, friendId, result);
         return result;
     }
 
@@ -82,5 +86,10 @@ public class UserService {
         if (user.getName() == null | user.getName().isEmpty() | user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
+    }
+
+    private void checkUser(Integer userId, Integer friendId) {
+        storage.getById(userId);
+        storage.getById(friendId);
     }
 }
