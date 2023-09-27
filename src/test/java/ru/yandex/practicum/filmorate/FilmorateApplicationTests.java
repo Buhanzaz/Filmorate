@@ -50,9 +50,11 @@ class FilmorateApplicationTests {
 		secondFilm = Film.builder()
 				.id(1)
 				.name("Test 2")
-				.description("test description 2").
-				releaseDate(LocalDate.now().minusYears(40))
-				.duration(180).genres(new HashSet<>()).mpa(ratingMpaDbStorage.getRatingMpaById(1)).build();
+				.description("test description 2")
+				.releaseDate(LocalDate.now().minusYears(40))
+				.duration(180)
+				.genres(new HashSet<>()).mpa(ratingMpaDbStorage.getRatingMpaById(1))
+				.build();
 
 		user = User.builder()
 				.id(1)
@@ -89,7 +91,7 @@ class FilmorateApplicationTests {
 	}
 
 	@Test
-	void getFilmById_shouldConfirmThatFilmIdExists(){
+	void getFilmById_shouldConfirmThatFilmIdExists() {
 		filmDbStorage.create(film);
 
 		assertEquals(filmDbStorage.getById(1).getId(),film.getId());
