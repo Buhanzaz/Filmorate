@@ -1,58 +1,90 @@
 package ru.yandex.practicum.filmorate.service;
 
-import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.FilmException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.user.UserStorage;
+import ru.yandex.practicum.filmorate.repository.interfaces.FilmStorage;
+import ru.yandex.practicum.filmorate.repository.interfaces.UserStorage;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class FilmService {
-    private final FilmStorage filmStorage;
     private final UserStorage userStorage;
+    private final FilmStorage filmStorage;
 
     @Autowired
-    public FilmService(FilmStorage filmStorage, UserStorage userStorage) {
-        this.filmStorage = filmStorage;
+    public FilmService(@Qualifier("FilmDbStorage") FilmStorage filmStorage, @Qualifier("UserDbStorage") UserStorage userStorage) {
         this.userStorage = userStorage;
+        this.filmStorage = filmStorage;
     }
 
-    public void addLike(int idUser, int idFilm) {
-        checkingTheExistenceOfUsersAndFilms(idUser, idFilm);
-
-        filmStorage.getFilm(idFilm).addLike(idUser);
+    public Collection<Film> getAll() {
+        log.info("List of all movies: " + filmStorage.getAllFilm().size());
+        return filmStorage.getAllFilm();
     }
 
-    public void removeLike(int idUser, int idFilm) {
-        checkingTheExistenceOfUsersAndFilms(idUser, idFilm);
-
-        filmStorage.getFilm(idFilm).removeLike(idUser);
+    public Film create(Film film) {
+        Film result = filmStorage.create(film);
+        log.info("Movie successfully added: " + film);
+        return result;
     }
 
-    public List<Film> getTenMostPopularFilm(int count) {
-        return filmStorage.getFilms().values().stream()
-                .sorted((f1, f2) -> {
-                    if (f1.getLikes() == f2.getLikes()) {
-                        return 0;
-                    }
-                    return (f1.getLikes() > f2.getLikes()) ? -1 : 1;
-                })
-                .limit(count)
-                .collect(Collectors.toUnmodifiableList());
+    public Film update(Film film) {
+        Film result = filmStorage.update(film);
+        log.info("Movie successfully updated: " + film);
+        return result;
     }
 
-    @SneakyThrows
-    private void checkingTheExistenceOfUsersAndFilms(int idUser, int idFilm) {
-        if (!userStorage.getUsers().containsKey(idUser)) {
-            throw new FilmException("The user with this id was not found.");
+    public void delete(int filmId) {
+        if (getById(filmId) == null) {
+            throw new NotFoundException("Movie with ID = " + filmId + " not found");
         }
-        if (!filmStorage.getFilms().containsKey(idFilm)) {
-            throw new FilmException("You are trying to searching a non-existent film, check the correctness of the id.");
+        log.info("Deleted film with id: {}", filmId);
+        filmStorage.delete(filmId);
+    }
+
+    public Film getById(Integer id) {
+        log.info("Requested user with ID = " + id);
+        return filmStorage.getById(id);
+    }
+
+    public void addLike(Integer filmId, Integer userId) {
+        Film film = filmStorage.getById(filmId);
+        if (film != null) {
+            if (userStorage.getById(userId) != null) {
+                filmStorage.addLike(filmId, userId);
+                log.info("Like successfully added");
+            } else {
+                throw new NotFoundException("User with ID = " + userId + " not found");
+            }
+        } else {
+            throw new NotFoundException("Movie with ID = " + filmId + " not found");
         }
+    }
+
+    public void removeLike(Integer filmId, Integer userId) {
+        Film film = filmStorage.getById(filmId);
+        if (film != null) {
+            if (userStorage.getById(userId) != null) {
+                filmStorage.removeLike(filmId, userId);
+                log.info("Like successfully removed");
+            } else {
+                throw new NotFoundException("User with ID = " + userId + " not found");
+            }
+        } else {
+            throw new NotFoundException("Movie with ID = " + filmId + " not found");
+        }
+    }
+
+    public List<Film> getTopFilm(int volume) {
+        log.info("Requested a list of popular movies");
+        return new ArrayList<>(filmStorage.getTopFilm(volume));
     }
 }
