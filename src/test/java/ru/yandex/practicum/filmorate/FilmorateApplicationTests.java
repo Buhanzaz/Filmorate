@@ -33,17 +33,26 @@ class FilmorateApplicationTests {
 	private Film secondFilm;
 	private User user;
 	private User secondUser;
+
 	@BeforeEach
 	void setUp() {
-		film = Film.builder().id(1).name("Test").
-				description("test description").
-				releaseDate(LocalDate.now().minusYears(40)).
-				duration(180).genres(new HashSet<>()).mpa(ratingMpaDbStorage.getRatingMpaById(1)).build();
 
-		secondFilm = Film.builder().id(1).name("Test 2").
-				description("test description 2").
-				releaseDate(LocalDate.now().minusYears(40)).
-				duration(180).genres(new HashSet<>()).mpa(ratingMpaDbStorage.getRatingMpaById(1)).build();
+		film = Film.builder()
+				.id(1)
+				.name("Test")
+				.description("test description")
+				.releaseDate(LocalDate.now().minusYears(40))
+				.duration(180)
+				.genres(new HashSet<>())
+				.mpa(ratingMpaDbStorage.getRatingMpaById(1))
+				.build();
+
+		secondFilm = Film.builder()
+				.id(1)
+				.name("Test 2")
+				.description("test description 2").
+				releaseDate(LocalDate.now().minusYears(40))
+				.duration(180).genres(new HashSet<>()).mpa(ratingMpaDbStorage.getRatingMpaById(1)).build();
 
 		user = User.builder()
 				.id(1)
