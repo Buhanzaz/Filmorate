@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.local.UserException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.repository.IdGenerator;
+import ru.yandex.practicum.filmorate.util.IdGenerator;
 import ru.yandex.practicum.filmorate.repository.interfaces.FilmStorage;
 
 import java.util.*;

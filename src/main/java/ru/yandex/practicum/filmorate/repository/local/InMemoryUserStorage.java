@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.local.UserException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.repository.IdGenerator;
+import ru.yandex.practicum.filmorate.util.IdGenerator;
 import ru.yandex.practicum.filmorate.repository.interfaces.UserStorage;
 
 import java.util.*;
