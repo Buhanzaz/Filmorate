@@ -29,12 +29,14 @@ public class UserService {
     }
 
     public User create(User user) {
+        changeName(user);
         User result = storage.create(user);
         log.info("User successfully added: " + user);
         return result;
     }
 
     public User update(User user) {
+        changeName(user);
         User result = storage.update(user);
         log.info("User successfully updated: " + user);
         return result;
@@ -74,5 +76,11 @@ public class UserService {
         List<User> result = storage.getCommonFriends(user1Id, user2Id);
         log.info("Common friends of users with ID " + " {} and {} {} ", user1Id, user2Id, result);
         return result;
+    }
+
+    private void changeName(User user) {
+        if (user.getName() == null | user.getName().isEmpty() | user.getName().isBlank()) {
+            user.setName(user.getLogin());
+        }
     }
 }

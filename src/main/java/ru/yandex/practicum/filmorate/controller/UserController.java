@@ -28,7 +28,6 @@ public class UserController {
 
     @PostMapping
     public User create(@Valid @RequestBody User user) {
-        preSave(user);
         userService.create(user);
         return user;
     }
@@ -69,9 +68,4 @@ public class UserController {
         return userService.getCommonFriends(id, otherId);
     }
 
-    private void preSave(User user) {
-        if (user.getName() == null) {
-            user.setName(user.getLogin());
-        }
-    }
 }
