@@ -1,67 +1,95 @@
 package ru.yandex.practicum.filmorate.service;
 
-
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.UserException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.user.UserStorage;
+import ru.yandex.practicum.filmorate.repository.interfaces.UserStorage;
 
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
-
+@Component
 @Service
+@Slf4j
 public class UserService {
-    private final UserStorage userStorage;
+    private final UserStorage storage;
 
     @Autowired
-    public UserService(UserStorage userStorage) {
-        this.userStorage = userStorage;
+    public UserService(@Qualifier("UserDbStorage") UserStorage storage) {
+        this.storage = storage;
     }
 
-    public void addFriend(int id, int friendId) {
-        checkingTheExistenceOfUsers(id, friendId);
-
-        userStorage.getUsers().get(id).addFriend(friendId);
-        userStorage.getUsers().get(friendId).addFriend(id);
+    public Collection<User> getAll() {
+        log.info("List of all users: " + storage.getAll().size());
+        return storage.getAll();
     }
 
-    public void removeFriend(int id, int friendId) {
-        checkingTheExistenceOfUsers(id, friendId);
-
-        userStorage.getUsers().get(id).removeFriend(friendId);
-        userStorage.getUsers().get(friendId).removeFriend(id);
+    public User create(User user) {
+        changeName(user);
+        User result = storage.create(user);
+        log.info("User successfully added: " + user);
+        return result;
     }
 
-    public List<User> listAllFriends(int id) {
-        return userStorage.getUser(id).getIdFriends().stream()
-                .map(userStorage::getUser)
-                .collect(Collectors.toList());
+    public User update(User user) {
+        changeName(user);
+        User result = storage.update(user);
+        log.info("User successfully updated: " + user);
+        return result;
     }
 
-    public List<User> listOfMutualFriends(int id, int friendId) {
-        checkingTheExistenceOfUsers(id, friendId);
-
-        List<Integer> userIdFriendsList = new ArrayList<>(userStorage.getUsers().get(id).getIdFriends());
-        List<Integer> friendIdFriendsList = new ArrayList<>(userStorage.getUsers().get(friendId).getIdFriends());
-        List<User> mutualFriends = new ArrayList<>();
-
-        for (Integer idFriend : userIdFriendsList) {
-            if (friendIdFriendsList.contains(idFriend)) {
-                mutualFriends.add(userStorage.getUsers().get(idFriend));
-            }
+    public void delete(int userId) {
+        if (getById(userId) == null) {
+            throw new NotFoundException("User with ID = " + userId + " not found");
         }
-        return mutualFriends;
+        log.info("Deleted film with id: {}", userId);
+        storage.delete(userId);
     }
 
-    private void checkingTheExistenceOfUsers(int id, int friendId) {
-        if (!userStorage.getUsers().containsKey(id)) {
-            throw new UserException("The user with this id was not found.");
+    public User getById(Integer id) {
+        log.info("Requested user with ID = " + id);
+        return storage.getById(id);
+    }
+
+    public void addFriend(Integer userId, Integer friendId) {
+        checkUser(userId, friendId);
+        storage.addFriend(userId, friendId);
+
+        log.info("Friend successfully added");
+    }
+
+    public void removeFriend(Integer userId, Integer friendId) {
+        checkUser(userId, friendId);
+        storage.removeFriend(userId, friendId);
+        log.info("Friend successfully removed");
+    }
+
+    public List<User> getAllFriends(Integer userId) {
+        checkUser(userId, userId);
+        List<User> result = storage.getFriendsById(userId);
+        log.info("Friends of user with ID = " + userId + result);
+        return result;
+    }
+
+    public List<User> getCommonFriends(Integer userId, Integer friendId) {
+        checkUser(userId, friendId);
+        List<User> result = storage.getCommonFriends(userId, friendId);
+        log.info("Common friends of users with ID " + " {} and {} {} ", userId, friendId, result);
+        return result;
+    }
+
+    private void changeName(User user) {
+        if (user.getName() == null | user.getName().isEmpty() | user.getName().isBlank()) {
+            user.setName(user.getLogin());
         }
-        if (!userStorage.getUsers().containsKey(friendId)) {
-            throw new UserException("You are trying to add a non-existent user, check the correctness of the id.");
-        }
+    }
+
+    private void checkUser(Integer userId, Integer friendId) {
+        storage.getById(userId);
+        storage.getById(friendId);
     }
 }

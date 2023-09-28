@@ -1,64 +1,59 @@
 package ru.yandex.practicum.filmorate.model;
 
-import javax.validation.constraints.*;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
 import ru.yandex.practicum.filmorate.annotation.AfterDate;
-import ru.yandex.practicum.filmorate.exception.FilmException;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.PositiveOrZero;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
-@Data
+@Builder(toBuilder = true)
+@AllArgsConstructor
+@Getter
+@Setter
 public class Film {
     @PositiveOrZero(message = "Id cannot be a negative number")
     private int id;
 
     @NotBlank(message = "Name film is mandatory")
-    private final String name;
+    private String name;
 
+    @NotBlank
     @Length(max = 200, message = "The description is too long. the maximum number of characters is 200")
-    private final String description;
+    private String description;
 
-    @AfterDate(message = "ada")
+    @NotNull
+    @AfterDate
     private LocalDate releaseDate;
 
     @NotNull(message = "Duration film is not empty")
     @PositiveOrZero(message = "Duration cannot be a negative number")
-    private final int duration;
+    private int duration;
 
-    @JsonIgnore
-    @Setter(AccessLevel.NONE)
-    private Set<Genre> genres = new HashSet<>();
+    private Set<Genre> genres;
 
-    @JsonIgnore
-    @Setter(AccessLevel.NONE)
     private RatingMpa mpa;
 
     @JsonIgnore
-    private Set<Integer> usersWhoLikeIt = new HashSet<>();
+    private final Set<Integer> likes = new HashSet<>();
 
-    @Setter(AccessLevel.NONE)
-    private int likes = 0;
-
-    @SneakyThrows
-    public void addLike(int idUser) {
-        try {
-            usersWhoLikeIt.add(idUser);
-            likes++;
-        } catch (Exception e) {
-            throw new FilmException("Have you already liked this movie");
-        }
+    public void addLike(Integer id) {
+        likes.add(id);
     }
 
-    @SneakyThrows
-    public void removeLike(int idUser) {
-        if (usersWhoLikeIt.contains(idUser)) {
-            usersWhoLikeIt.remove(idUser);
-            likes--;
-        }
+    public void deleteLike(Integer id) {
+        likes.remove(id);
+    }
+
+    public void addGenre(Genre genre) {
+        genres.add(genre);
     }
 }

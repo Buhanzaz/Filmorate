@@ -1,86 +1,65 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import javax.validation.Valid;
-import javax.validation.constraints.Min;
-
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.FilmException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
-import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
-import java.util.ArrayList;
+import javax.validation.Valid;
+import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @RestController
 @RequestMapping("/films")
 public class FilmController {
-    private final FilmStorage filmStorage;
     private final FilmService filmService;
 
-    public FilmController(FilmStorage filmStorage, FilmService filmService) {
-        this.filmStorage = filmStorage;
+    @Autowired
+    public FilmController(FilmService filmService) {
         this.filmService = filmService;
     }
 
+    @GetMapping
+    public Collection<Film> getAll() {
+        return filmService.getAll();
+    }
+
     @PostMapping
-    public Film postRequestFilm(@Valid @RequestBody Film film) {
-        filmStorage.add(film);
-        log.debug("The movie is added{}: ", film.getName());
+    public Film create(@Valid @RequestBody Film film) {
+        filmService.create(film);
         return film;
-    }
-
-    @GetMapping()
-    public List<Film> getRequestAllFilm() {
-        List<Film> allFilm = new ArrayList<>(filmStorage.getFilms().values());
-        log.debug("Amount of movies: {}", allFilm.size());
-        return allFilm;
-    }
-
-    @GetMapping("/{id}")
-    public Optional<Film> getRequestFilm(@PathVariable @Min(1) int id) {
-        Optional<Film> film = Optional.ofNullable(filmStorage.getFilm(id));
-
-        if (film.isEmpty()) {
-            throw new FilmException("The film doesn't exist.");
-        }
-        log.debug("The movie is found {}", film.get().getName());
-        return film;
-    }
-
-    @GetMapping("/popular")
-    public List<Film> getRequestTopFilm(@RequestParam(value = "count", defaultValue = "10") int count) {
-        log.debug("Show top films.");
-        return filmService.getTenMostPopularFilm(count);
     }
 
     @PutMapping
-    public Film putRequestFilm(@Valid @RequestBody Film film) {
-        filmStorage.put(film);
-        log.debug("The movie is changed: {} ", film.getName());
+    public Film update(@Valid @RequestBody Film film) {
+        filmService.update(film);
         return film;
     }
 
-    @PutMapping("/{id}/like/{userId}")
-    public void putRequestAddLike(@PathVariable @Min(1) int id, @PathVariable int userId) {
-        filmService.addLike(userId, id);
-        log.debug("User {} added a like to the movie {}: ", userId, filmStorage.getFilm(id).getName());
+    @DeleteMapping("/{id}")
+    public void deleteById(@PathVariable int id) {
+        filmService.delete(id);
     }
 
+    @GetMapping("/{id}")
+    public Film getFilmById(@PathVariable Integer id) {
+        return filmService.getById(id);
+    }
+
+    @PutMapping("/{id}/like/{userId}")
+    public void addLike(@PathVariable Integer id, @PathVariable Integer userId) {
+        filmService.addLike(id, userId);
+    }
 
     @DeleteMapping("/{id}/like/{userId}")
-    public void deleteRequestDeleteLike(@PathVariable @Min(1) int id, @PathVariable int userId) {
-        filmService.removeLike(userId, id);
-        log.debug("User {} delete a like to the movie {}: ", userId, filmStorage.getFilm(id).getName());
+    public void removeLike(@PathVariable Integer id, @PathVariable Integer userId) {
+        filmService.removeLike(id, userId);
     }
 
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public FilmException handleNullableCount(final FilmException e) {
-        return new FilmException("Error with the count parameter.", e.getMessage());
+    @GetMapping("/popular")
+    public List<Film> getTopFilm(@RequestParam(defaultValue = "10") Integer count) {
+        return filmService.getTopFilm(count);
     }
 }
