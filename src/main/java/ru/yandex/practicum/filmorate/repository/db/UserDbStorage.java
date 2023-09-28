@@ -80,7 +80,7 @@ public class UserDbStorage implements UserStorage {
     }
 
     public void addFriend(int userId, int friendId) {
-        String sqlQuery = "INSERT INTO FRIENDS (USER_ID, FRIEND_ID, STATUS) VALUES(?, ?, ?)";
+        String sqlQuery = "MERGE INTO FRIENDS (USER_ID, FRIEND_ID, STATUS) VALUES(?, ?, ?)";
         jdbcTemplate.update(sqlQuery, userId, friendId, true);
     }
 
