@@ -77,7 +77,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public void delete(int filmId) {
-        /*jdbcTemplate.update("DELETE FROM FILMS WHERE FILM_ID = ?", filmId);*/
+        jdbcTemplate.update("DELETE FROM FILMS WHERE FILM_ID = ?", filmId);
     }
 
     @Override
@@ -113,9 +113,9 @@ public class FilmDbStorage implements FilmStorage {
         });
     }
 
-    private Set<Genre> getGenres(int filmId) {
+    private SortedSet<Genre> getGenres(int filmId) {
         Comparator<Genre> compId = Comparator.comparing(Genre::getId);
-        Set<Genre> genres = new TreeSet<>(compId);
+        SortedSet<Genre> genres = new TreeSet<>(compId);
         String sqlQuery = "SELECT FILM_GENRES.GENRE_ID, GENRES.GENRE FROM FILM_GENRES "
                 + "JOIN GENRES ON GENRES.GENRE_ID = FILM_GENRES.GENRE_ID "
                 + "WHERE FILM_ID = ? ORDER BY GENRE_ID ASC";
@@ -203,13 +203,11 @@ public class FilmDbStorage implements FilmStorage {
         int mpaId = rs.getInt("rating_id");
         String mpaName = rs.getString("rating");
         RatingMpa mpa = new RatingMpa(mpaId, mpaName);
-        Set<Genre> genres = new HashSet<>();
         return Film.builder()
                 .id(filmId)
                 .name(name)
                 .description(description)
                 .duration(duration)
-                .genres(genres)
                 .mpa(mpa)
                 .releaseDate(releaseDate)
                 .build();
@@ -225,7 +223,7 @@ public class FilmDbStorage implements FilmStorage {
         int mpaId = srs.getInt("rating_id");
         String mpaName = srs.getString("rating");
         RatingMpa mpa = new RatingMpa(mpaId, mpaName);
-        Set<Genre> genres = getGenres(id);
+        SortedSet<Genre> genres = getGenres(id);
         return Film.builder()
                 .id(id)
                 .name(name)
