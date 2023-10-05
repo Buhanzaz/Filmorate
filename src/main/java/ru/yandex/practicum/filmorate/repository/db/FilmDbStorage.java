@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.repository.db;
 
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -17,7 +18,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.*;
-import java.util.stream.Collectors;
+
 
 @Repository
 @Qualifier("FilmDbStorage")
@@ -31,9 +32,7 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Collection<Film> getAllFilm() {
         String sqlQuery = "SELECT * FROM FILMS "
-                + "JOIN MPA_RATING ON FILMS.MPA_RATING_ID = MPA_RATING.RATING_ID "
-                + "LEFT JOIN FILM_GENRES ON FILM_GENRES.FILM_ID = FILMS.FILM_ID "
-                + "LEFT JOIN GENRES ON GENRES.GENRE_ID = FILM_GENRES.GENRE_ID";
+                + "JOIN MPA_RATING ON FILMS.MPA_RATING_ID = MPA_RATING.RATING_ID ";
         List<Film> films = jdbcTemplate.query(sqlQuery, this::makeFilm);
         return addGenre(films);
     }
@@ -78,7 +77,9 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public void delete(int filmId) {
+        add-remove-endpoint
         jdbcTemplate.update("DELETE FROM FILMS WHERE FILM_ID = ?", filmId);
+      
     }
 
     @Override
@@ -149,11 +150,12 @@ public class FilmDbStorage implements FilmStorage {
                 + "ORDER BY COUNT (likes.FILM_ID) DESC "
                 + "LIMIT "
                 + count;
-        return jdbcTemplate.query(sqlQuery, this::makeFilm);
+        List<Film> films = jdbcTemplate.query(sqlQuery, this::makeFilm);
+        return addGenre(films);
     }
 
     private List<Film> addGenre(List<Film> films) {
-        Map<Integer, Film> filmsTable = films.stream().collect(Collectors.toMap(Film::getId, film -> film));
+       /* Map<Integer, Film> filmsTable = films.stream().collect(Collectors.toMap(Film::getId, film -> film));
         String inSql = String.join(", ", Collections.nCopies(filmsTable.size(), "?"));
         final String sqlQuery = "SELECT * "
                 + "FROM FILM_GENRES "
@@ -164,7 +166,28 @@ public class FilmDbStorage implements FilmStorage {
             filmsTable.get(rs.getInt("film_id")).addGenre(new Genre(rs.getInt("genre_id"),
                     rs.getString("genre")));
         }, filmsTable.keySet().toArray());
+        return films;*/
+        List<FilmGenre> filmGenres =
+                jdbcTemplate.query(
+                        "select FILM_GENRES.FILM_ID, GENRES.GENRE_ID, GENRES.GENRE "
+                                + "from FILMS, FILM_GENRES, GENRES "
+                                + "where FILMS.FILM_ID = FILM_GENRES.FILM_ID "
+                                + "and FILM_GENRES.GENRE_ID = GENRES.GENRE_ID",
+                        (rs, rownum) -> new FilmGenre(rs.getInt(1), rs.getInt(2), rs.getString(3)));
+
+        films.forEach(film -> {
+            filmGenres.stream()
+                    .filter(filmGenre -> film.getId() == filmGenre.filmId)
+                    .forEach(filmGenre -> film.addGenre(new Genre(filmGenre.genreId, filmGenre.genreName)));
+        });
         return films;
+    }
+
+    @AllArgsConstructor
+    private static class FilmGenre {
+        int filmId;
+        int genreId;
+        String genreName;
     }
 
     private Genre makeGenre(ResultSet rs, int id) throws SQLException {
