@@ -13,7 +13,7 @@ import java.util.Objects;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Genre implements Comparable<Genre>{
+public class Genre implements Comparable<Genre> {
 
     @Positive
     protected int id;
