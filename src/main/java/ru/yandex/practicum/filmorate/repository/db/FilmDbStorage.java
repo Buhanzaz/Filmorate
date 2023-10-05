@@ -77,7 +77,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public void delete(int filmId) {
-        //TODO
+        jdbcTemplate.update("DELETE FROM FILMS WHERE FILM_ID = ?", filmId);
     }
 
     @Override
@@ -171,10 +171,9 @@ public class FilmDbStorage implements FilmStorage {
                                 + "and fg.GENRE_ID = g.GENRE_ID",
                         (rs, rownum) -> new FilmGenre(rs.getInt(1), rs.getInt(2), rs.getString(3)));
 
-        films.forEach(film -> {
-            filmGenres.stream()
-                    .filter(filmGenre -> film.getId() == filmGenre.filmId)
-                    .forEach(filmGenre -> film.addGenre(new Genre(filmGenre.filmId, filmGenre.genreName)));
+        films.forEach(film -> {filmGenres.stream()
+                .filter(filmGenre -> film.getId() == filmGenre.filmId)
+                .forEach(filmGenre -> film.addGenre(new Genre(filmGenre.genreId, filmGenre.genreName)));
         });
         return films;
     }
