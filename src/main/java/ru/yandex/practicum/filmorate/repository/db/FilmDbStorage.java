@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.repository.db;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -19,7 +18,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.*;
-import java.util.stream.Collectors;
+
 
 @Repository
 @Qualifier("FilmDbStorage")
@@ -77,8 +76,8 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public String delete(int filmId) {
-        return "DELETE FROM FILMS WHERE FILM_ID = ?";
+    public void delete(int filmId) {
+        /*jdbcTemplate.update("DELETE FROM FILMS WHERE FILM_ID = ?", filmId);*/
     }
 
     @Override
@@ -149,7 +148,8 @@ public class FilmDbStorage implements FilmStorage {
                 + "ORDER BY COUNT (likes.FILM_ID) DESC "
                 + "LIMIT "
                 + count;
-        return jdbcTemplate.query(sqlQuery, this::makeFilm);
+        List<Film> films = jdbcTemplate.query(sqlQuery, this::makeFilm);
+        return addGenre(films);
     }
 
     private List<Film> addGenre(List<Film> films) {
