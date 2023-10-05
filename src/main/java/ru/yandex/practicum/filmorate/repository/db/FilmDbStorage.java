@@ -7,6 +7,7 @@ import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.RatingMpa;
@@ -54,6 +55,9 @@ public class FilmDbStorage implements FilmStorage {
         if (keys != null) {
             film.setId((Integer) keys.get("film_id"));
             addGenre((Integer) keys.get("film_id"), film.getGenres());
+            addDirector((Integer) keys.get("film_id"), film.getDirectors());
+            film.setGenres(getGenres(film.getId()));
+            film.setDirectors(getDirectors(film.getId()));
         }
         return film;
     }
@@ -71,8 +75,10 @@ public class FilmDbStorage implements FilmStorage {
         jdbcTemplate.update(sqlQuery, film.getName(), film.getDescription(), film.getDuration(),
                 film.getReleaseDate(), film.getMpa().getId(), film.getId());
         addGenre(film.getId(), film.getGenres());
+        addDirector(film.getId(), film.getDirectors());
         int filmId = film.getId();
         film.setGenres(getGenres(filmId));
+        film.setDirectors(getDirectors(filmId));
         return getById(filmId);
     }
 
@@ -114,6 +120,26 @@ public class FilmDbStorage implements FilmStorage {
         });
     }
 
+    public void addDirector(int filmId, Set<Director> directors) {
+        deleteAllDirectorsById(filmId);
+        if (directors == null || directors.isEmpty()) {
+            return;
+        }
+        String sqlQuery = "INSERT INTO FILM_DIRECTORS (FILM_ID, DIRECTOR_ID) "
+                + "VALUES (?, ?)";
+        List<Director> directorList = new ArrayList<>(directors);
+        this.jdbcTemplate.batchUpdate(sqlQuery, new BatchPreparedStatementSetter() {
+            public void setValues(PreparedStatement ps, int i) throws SQLException {
+                ps.setInt(1, filmId);
+                ps.setInt(2, directorList.get(i).getId());
+            }
+
+            public int getBatchSize() {
+                return directorList.size();
+            }
+        });
+    }
+
     private Set<Genre> getGenres(int filmId) {
         Comparator<Genre> compId = Comparator.comparing(Genre::getId);
         Set<Genre> genres = new TreeSet<>(compId);
@@ -124,8 +150,23 @@ public class FilmDbStorage implements FilmStorage {
         return genres;
     }
 
+    private Set<Director> getDirectors(int filmId) {
+        Comparator<Director> compId = Comparator.comparing(Director::getId);
+        Set<Director> genres = new TreeSet<>(compId);
+        String sqlQuery = "SELECT D.DIRECTOR_ID, D.NAME FROM DIRECTORS AS D "
+                + "JOIN FILM_DIRECTORS AS FD ON D.DIRECTOR_ID = FD.DIRECTOR_ID "
+                + "WHERE FILM_ID = ?";
+        genres.addAll(jdbcTemplate.query(sqlQuery, this::makeDirector, filmId));
+        return genres;
+    }
+
     private void deleteAllGenresById(int filmId) {
         String sglQuery = "DELETE FROM FILM_GENRES WHERE FILM_ID = ?";
+        jdbcTemplate.update(sglQuery, filmId);
+    }
+
+    private void deleteAllDirectorsById(int filmId) {
+        String sglQuery = "DELETE FROM FILM_DIRECTORS WHERE FILM_ID = ?";
         jdbcTemplate.update(sglQuery, filmId);
     }
 
@@ -152,6 +193,22 @@ public class FilmDbStorage implements FilmStorage {
         return jdbcTemplate.query(sqlQuery, this::makeFilm);
     }
 
+    @Override
+    public List<Film> getDirectorFilmsSortedByYear(int directorId) {
+        String sqlQuery = "SELECT * FROM FILMS AS F "
+                + "JOIN MPA_RATING AS MPA ON F.MPA_RATING_ID = MPA.RATING_ID "
+                + "JOIN FILM_DIRECTORS AS FD ON F.FILM_ID = FD.FILM_ID "
+                + "WHERE FD.DIRECTOR_ID = ? "
+                + "ORDER BY EXTRACT(YEAR FROM release_date)";
+        return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> filmMap(rs), directorId);
+    }
+
+    @Override
+    public List<Film> getDirectorFilmsSortedByLikes(Integer directorId) {
+        return null;
+    }
+
+
     private List<Film> addGenre(List<Film> films) {
         Map<Integer, Film> filmsTable = films.stream().collect(Collectors.toMap(Film::getId, film -> film));
         String inSql = String.join(", ", Collections.nCopies(filmsTable.size(), "?"));
@@ -171,6 +228,12 @@ public class FilmDbStorage implements FilmStorage {
         int genreId = rs.getInt("genre_id");
         String genreName = rs.getString("genre");
         return new Genre(genreId, genreName);
+    }
+
+    private Director makeDirector(ResultSet rs, int id) throws SQLException {
+        Integer directorId = rs.getInt("director_id");
+        String name = rs.getString("name");
+        return new Director(directorId, name);
     }
 
     private Film makeFilm(ResultSet rs, int id) throws SQLException {
@@ -205,6 +268,7 @@ public class FilmDbStorage implements FilmStorage {
         String mpaName = srs.getString("rating");
         RatingMpa mpa = new RatingMpa(mpaId, mpaName);
         Set<Genre> genres = getGenres(id);
+        Set<Director> directors = getDirectors(id);
         return Film.builder()
                 .id(id)
                 .name(name)
@@ -212,6 +276,31 @@ public class FilmDbStorage implements FilmStorage {
                 .duration(duration)
                 .mpa(mpa)
                 .genres(genres)
+                .directors(directors)
+                .releaseDate(releaseDate)
+                .build();
+    }
+
+    private Film filmMap(ResultSet rs) throws SQLException {
+        int id = rs.getInt("film_id");
+        String name = rs.getString("name");
+        String description = rs.getString("description");
+        int duration = rs.getInt("duration");
+        LocalDate releaseDate = Objects.requireNonNull(rs.getTimestamp("release_date"))
+                .toLocalDateTime().toLocalDate();
+        int mpaId = rs.getInt("rating_id");
+        String mpaName = rs.getString("rating");
+        RatingMpa mpa = new RatingMpa(mpaId, mpaName);
+        Set<Genre> genres = getGenres(id);
+        Set<Director> directors = getDirectors(id);
+        return Film.builder()
+                .id(id)
+                .name(name)
+                .description(description)
+                .duration(duration)
+                .mpa(mpa)
+                .genres(genres)
+                .directors(directors)
                 .releaseDate(releaseDate)
                 .build();
     }
