@@ -77,8 +77,8 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public String delete(int filmId) {
-        return "DELETE FROM FILMS WHERE FILM_ID = ?";
+    public void delete(int filmId) {
+        jdbcTemplate.update("DELETE FROM FILMS WHERE FILM_ID = ?", filmId);
     }
 
     @Override
@@ -90,7 +90,7 @@ public class FilmDbStorage implements FilmStorage {
         if (srs.next()) {
             return filmMap(srs);
         } else {
-            throw new NotFoundException("Movie with ID = " + filmId + " not found");
+            throw new NotFoundException("Movie with ID = " + filmId + " not found!");
         }
     }
 
