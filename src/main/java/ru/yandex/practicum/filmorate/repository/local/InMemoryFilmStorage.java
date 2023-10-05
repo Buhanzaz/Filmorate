@@ -11,7 +11,6 @@ import ru.yandex.practicum.filmorate.util.IdGenerator;
 import ru.yandex.practicum.filmorate.repository.interfaces.FilmStorage;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Getter
 @Repository
@@ -49,9 +48,8 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public String delete(int id) {
+    public void delete(int id) {
         films.remove(id);
-        return "";
     }
 
     @Override
@@ -66,7 +64,7 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public void addGenre(int filmId, Set<Genre> genres) {
-        films.get(filmId).setGenres(genres);
+        films.get(filmId).setGenres((SortedSet<Genre>) genres);
     }
 
     @Override
@@ -79,16 +77,4 @@ public class InMemoryFilmStorage implements FilmStorage {
         films.get(filmId).deleteLike(userId);
     }
 
-    @Override
-    public List<Film> getTopFilm(Integer count) {
-        return new ArrayList<>(films.values().stream()
-                .sorted((f1, f2) -> {
-                    if (f1.getLikes().size() == f2.getLikes().size()) {
-                        return 0;
-                    }
-                    return (f1.getLikes().size() > f2.getLikes().size()) ? -1 : 1;
-                })
-                .limit(count)
-                .collect(Collectors.toUnmodifiableList()));
-    }
 }
