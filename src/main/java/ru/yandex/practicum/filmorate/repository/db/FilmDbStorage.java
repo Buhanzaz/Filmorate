@@ -89,7 +89,7 @@ public class FilmDbStorage implements FilmStorage {
         if (srs.next()) {
             return filmMap(srs);
         } else {
-            throw new NotFoundException("Movie with ID = " + filmId + " not found");
+            throw new NotFoundException("Movie with ID = " + filmId + " not found!");
         }
     }
 
