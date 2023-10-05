@@ -8,6 +8,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.repository.db.FilmDbStorage;
@@ -20,6 +21,7 @@ import java.util.HashSet;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 @AutoConfigureTestDatabase
@@ -121,5 +123,27 @@ class FilmorateApplicationTests {
 		User userOptional = userDbStorage.getById(1);
 
 		assertEquals(userOptional.getName(), "Eugene");
+	}
+
+	@Test
+	public void deleteUserById_ShouldConfirmThatUsernameHasBeenDeleted() {
+		userDbStorage.create(user);
+		userDbStorage.delete(user.getId());
+		NotFoundException exception = assertThrows(NotFoundException.class, () -> {
+			userDbStorage.getById(user.getId());
+		});
+
+		assertEquals(exception.getMessage(), "User with ID=1 not found!");
+	}
+
+	@Test
+	public void deleteFilmById_ShouldConfirmThatUsernameHasBeenDeleted() {
+		filmDbStorage.create(film);
+		filmDbStorage.delete(film.getId());
+		NotFoundException exception = assertThrows(NotFoundException.class, () -> {
+			filmDbStorage.getById(film.getId());
+		});
+
+		assertEquals(exception.getMessage(), "Movie with ID = 1 not found!");
 	}
 }
