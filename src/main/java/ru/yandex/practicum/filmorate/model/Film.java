@@ -52,4 +52,8 @@ public class Film {
     public void addGenre(Genre genre) {
         genres.add(genre);
     }
+
+    public int countLikes() {
+        return likes.size();
+    }
 }

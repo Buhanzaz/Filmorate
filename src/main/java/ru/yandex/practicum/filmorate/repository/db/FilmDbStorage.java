@@ -34,7 +34,7 @@ public class FilmDbStorage implements FilmStorage {
         String sqlQuery = "SELECT * FROM FILMS "
                 + "JOIN MPA_RATING ON FILMS.MPA_RATING_ID = MPA_RATING.RATING_ID ";
         List<Film> films = jdbcTemplate.query(sqlQuery, this::makeFilm);
-        return addGenre(films);
+        return addGenreInFilms(addLikesInFilms(films));
     }
 
     @Override
@@ -140,31 +140,19 @@ public class FilmDbStorage implements FilmStorage {
         jdbcTemplate.update(sqlQuery, filmId, userId);
     }
 
-    public List<Film> getTopFilm(Integer count) {
-        String sqlQuery = "SELECT * FROM FILMS "
-                + "LEFT JOIN likes ON likes.FILM_ID = FILMS.FILM_ID "
-                + "JOIN MPA_RATING ON FILMS.MPA_RATING_ID = MPA_RATING.RATING_ID "
-                + "GROUP BY FILMS.FILM_ID "
-                + "ORDER BY COUNT (likes.FILM_ID) DESC "
-                + "LIMIT "
-                + count;
-        List<Film> films = jdbcTemplate.query(sqlQuery, this::makeFilm);
-        return addGenre(films);
+
+    private List<Film> addLikesInFilms(List<Film> films) {
+        List<FilmLikes> filmsLikes =
+                jdbcTemplate.query(
+                        "select film_id, user_id from likes",
+                        (rs, rownum) -> new FilmLikes(rs.getInt(1), rs.getInt(2)));
+        films.forEach(film -> filmsLikes.stream()
+                .filter(filmsLike -> film.getId() == filmsLike.filmId)
+                .forEach(filmsLike -> film.addLike(filmsLike.userId)));
+        return films;
     }
 
-    private List<Film> addGenre(List<Film> films) {
-       /* Map<Integer, Film> filmsTable = films.stream().collect(Collectors.toMap(Film::getId, film -> film));
-        String inSql = String.join(", ", Collections.nCopies(filmsTable.size(), "?"));
-        final String sqlQuery = "SELECT * "
-                + "FROM FILM_GENRES "
-                + "LEFT OUTER JOIN genres ON FILM_GENRES.GENRE_ID = genres.GENRE_ID "
-                + "WHERE FILM_GENRES.FILM_ID IN (" + inSql + ") "
-                + "ORDER BY FILM_GENRES.GENRE_ID";
-        jdbcTemplate.query(sqlQuery, (rs) -> {
-            filmsTable.get(rs.getInt("film_id")).addGenre(new Genre(rs.getInt("genre_id"),
-                    rs.getString("genre")));
-        }, filmsTable.keySet().toArray());
-        return films;*/
+    private List<Film> addGenreInFilms(List<Film> films) {
         List<FilmGenre> filmGenres =
                 jdbcTemplate.query(
                         "select FILM_GENRES.FILM_ID, GENRES.GENRE_ID, GENRES.GENRE "
@@ -173,19 +161,10 @@ public class FilmDbStorage implements FilmStorage {
                                 + "and FILM_GENRES.GENRE_ID = GENRES.GENRE_ID",
                         (rs, rownum) -> new FilmGenre(rs.getInt(1), rs.getInt(2), rs.getString(3)));
 
-        films.forEach(film -> {
-            filmGenres.stream()
-                    .filter(filmGenre -> film.getId() == filmGenre.filmId)
-                    .forEach(filmGenre -> film.addGenre(new Genre(filmGenre.genreId, filmGenre.genreName)));
-        });
+        films.forEach(film -> filmGenres.stream()
+                .filter(filmGenre -> film.getId() == filmGenre.filmId)
+                .forEach(filmGenre -> film.addGenre(new Genre(filmGenre.genreId, filmGenre.genreName))));
         return films;
-    }
-
-    @AllArgsConstructor
-    private static class FilmGenre {
-        int filmId;
-        int genreId;
-        String genreName;
     }
 
     private Genre makeGenre(ResultSet rs, int id) throws SQLException {
@@ -200,7 +179,7 @@ public class FilmDbStorage implements FilmStorage {
         String description = rs.getString("description");
         int duration = rs.getInt("duration");
         LocalDate releaseDate = rs.getTimestamp("release_date").toLocalDateTime().toLocalDate();
-        int mpaId = rs.getInt("rating_id");
+        int mpaId = rs.getInt("mpa_rating_id");
         String mpaName = rs.getString("rating");
         RatingMpa mpa = new RatingMpa(mpaId, mpaName);
         return Film.builder()
@@ -233,5 +212,18 @@ public class FilmDbStorage implements FilmStorage {
                 .genres(genres)
                 .releaseDate(releaseDate)
                 .build();
+    }
+
+    @AllArgsConstructor
+    private static class FilmGenre {
+        int filmId;
+        int genreId;
+        String genreName;
+    }
+
+    @AllArgsConstructor
+    private static class FilmLikes {
+        int filmId;
+        int userId;
     }
 }
