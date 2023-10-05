@@ -1,5 +1,7 @@
 package ru.yandex.practicum.filmorate.repository.db;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -17,7 +19,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Repository
 @Qualifier("FilmDbStorage")
@@ -31,9 +32,7 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Collection<Film> getAllFilm() {
         String sqlQuery = "SELECT * FROM FILMS "
-                + "JOIN MPA_RATING ON FILMS.MPA_RATING_ID = MPA_RATING.RATING_ID "
-                + "LEFT JOIN FILM_GENRES ON FILM_GENRES.FILM_ID = FILMS.FILM_ID "
-                + "LEFT JOIN GENRES ON GENRES.GENRE_ID = FILM_GENRES.GENRE_ID";
+                + "JOIN MPA_RATING ON FILMS.MPA_RATING_ID = MPA_RATING.RATING_ID ";
         List<Film> films = jdbcTemplate.query(sqlQuery, this::makeFilm);
         return addGenre(films);
     }
@@ -77,8 +76,8 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public String delete(int filmId) {
-        return "DELETE FROM FILMS WHERE FILM_ID = ?";
+    public void delete(int filmId) {
+        //TODO
     }
 
     @Override
@@ -90,7 +89,7 @@ public class FilmDbStorage implements FilmStorage {
         if (srs.next()) {
             return filmMap(srs);
         } else {
-            throw new NotFoundException("Movie with ID = " + filmId + " not found");
+            throw new NotFoundException("Movie with ID = " + filmId + " not found!");
         }
     }
 
@@ -153,7 +152,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     private List<Film> addGenre(List<Film> films) {
-        Map<Integer, Film> filmsTable = films.stream().collect(Collectors.toMap(Film::getId, film -> film));
+        /*Map<Integer, Film> filmsTable = films.stream().collect(Collectors.toMap(Film::getId, film -> film));
         String inSql = String.join(", ", Collections.nCopies(filmsTable.size(), "?"));
         final String sqlQuery = "SELECT * "
                 + "FROM FILM_GENRES "
@@ -163,8 +162,29 @@ public class FilmDbStorage implements FilmStorage {
         jdbcTemplate.query(sqlQuery, (rs) -> {
             filmsTable.get(rs.getInt("film_id")).addGenre(new Genre(rs.getInt("genre_id"),
                     rs.getString("genre")));
-        }, filmsTable.keySet().toArray());
+        }, filmsTable.keySet().toArray());*/
+        List<FilmGenre> filmGenres =
+                jdbcTemplate.query(
+                        "select fg.FILM_ID, g.GENRE_ID, g.GENRE "
+                                + "from FILMS f, FILM_GENRES fg, GENRES g "
+                                + "where f.FILM_ID = fg.FILM_ID "
+                                + "and fg.GENRE_ID = g.GENRE_ID",
+                        (rs, rownum) -> new FilmGenre(rs.getInt(1), rs.getInt(2), rs.getString(3)));
+
+        films.forEach(film -> {
+            filmGenres.stream()
+                    .filter(filmGenre -> film.getId() == filmGenre.filmId)
+                    .forEach(filmGenre -> film.addGenre(new Genre(filmGenre.filmId, filmGenre.genreName)));
+        });
         return films;
+    }
+
+    @Data
+    @AllArgsConstructor
+    private static class FilmGenre {
+        int filmId;
+        int genreId;
+        String genreName;
     }
 
     private Genre makeGenre(ResultSet rs, int id) throws SQLException {
