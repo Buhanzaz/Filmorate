@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import org.hibernate.validator.constraints.Length;
 import ru.yandex.practicum.filmorate.annotation.AfterDate;
@@ -32,13 +31,13 @@ public class Film {
     @NotNull(message = "Duration film is not empty")
     @PositiveOrZero(message = "Duration cannot be a negative number")
     private int duration;
+
     @Builder.Default
     @EqualsAndHashCode.Exclude
-    private SortedSet<Genre> genres = new TreeSet<>(Comparator.comparingInt(Genre::getId));
+    private SortedSet<Genre> genres = new TreeSet<>();
 
     private RatingMpa mpa;
 
-    @JsonIgnore
     private final Set<Integer> likes = new HashSet<>();
 
     public void addLike(Integer id) {
