@@ -1,17 +1,13 @@
 package ru.yandex.practicum.filmorate.model;
 
-import lombok.*;
-import org.springframework.stereotype.Service;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Positive;
 
-@Service
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
 @Data
+@AllArgsConstructor
 public class RatingMpa {
 
     @Positive

@@ -1,10 +1,9 @@
 package ru.yandex.practicum.filmorate.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.hibernate.validator.constraints.Length;
 import ru.yandex.practicum.filmorate.annotation.AfterDate;
 
@@ -13,13 +12,13 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.PositiveOrZero;
 import java.time.LocalDate;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 @Builder(toBuilder = true)
+@Data
 @AllArgsConstructor
-@Getter
-@Setter
 public class Film {
     @PositiveOrZero(message = "Id cannot be a negative number")
     private int id;
@@ -39,12 +38,14 @@ public class Film {
     @PositiveOrZero(message = "Duration cannot be a negative number")
     private int duration;
 
-    private Set<Genre> genres;
-    private Set<Director> directors;
+    @Builder.Default
+    @EqualsAndHashCode.Exclude
+    private SortedSet<Genre> genres = new TreeSet<>();
+    @Builder.Default
+    private Set<Director> directors = new HashSet<>();
 
     private RatingMpa mpa;
 
-    @JsonIgnore
     private final Set<Integer> likes = new HashSet<>();
 
     public void addLike(Integer id) {
@@ -59,16 +60,11 @@ public class Film {
         genres.add(genre);
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Film film = (Film) o;
-        return id == film.id && duration == film.duration && Objects.equals(name, film.name) && Objects.equals(description, film.description) && Objects.equals(releaseDate, film.releaseDate) && Objects.equals(genres, film.genres) && Objects.equals(directors, film.directors) && Objects.equals(mpa, film.mpa) && Objects.equals(likes, film.likes);
+    public void addDirector(Director director) {
+        directors.add(director);
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, name, description, releaseDate, duration, genres, directors, mpa, likes);
+    public int countLikes() {
+        return likes.size();
     }
 }

@@ -8,6 +8,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
@@ -53,7 +54,7 @@ class FilmorateApplicationTests {
 				.description("test description")
 				.releaseDate(LocalDate.now().minusYears(10))
 				.duration(180)
-				.genres(new HashSet<>())
+				.genres(new TreeSet<>())
 				.mpa(ratingMpaDbStorage.getRatingMpaById(1))
 				.directors(Set.of(director1))
 				.build();
@@ -64,7 +65,7 @@ class FilmorateApplicationTests {
 				.description("test description 2")
 				.releaseDate(LocalDate.now().minusYears(20))
 				.duration(180)
-				.genres(new HashSet<>()).mpa(ratingMpaDbStorage.getRatingMpaById(1))
+				.genres(new TreeSet<>()).mpa(ratingMpaDbStorage.getRatingMpaById(1))
 				.directors(Set.of(director1, director2))
 				.build();
 
@@ -74,7 +75,7 @@ class FilmorateApplicationTests {
 				.description("test description 3")
 				.releaseDate(LocalDate.now().minusYears(30))
 				.duration(180)
-				.genres(new HashSet<>()).mpa(ratingMpaDbStorage.getRatingMpaById(1))
+				.genres(new TreeSet<>()).mpa(ratingMpaDbStorage.getRatingMpaById(1))
 				.directors(Set.of(director2))
 				.build();
 
@@ -116,7 +117,7 @@ class FilmorateApplicationTests {
 	void getFilmById_shouldConfirmThatFilmIdExists() {
 		filmDbStorage.create(film);
 
-		assertEquals(filmDbStorage.getById(1).getId(),film.getId());
+		assertEquals(filmDbStorage.getById(1).getId(), film.getId());
 	}
 
 	@Test
@@ -143,6 +144,29 @@ class FilmorateApplicationTests {
 		User userOptional = userDbStorage.getById(1);
 
 		assertEquals(userOptional.getName(), "Eugene");
+	}
+
+	@Test
+	public void deleteUserById_ShouldConfirmThatUsernameHasBeenDeleted() {
+		userDbStorage.create(user);
+		userDbStorage.delete(user.getId());
+		NotFoundException exception = assertThrows(NotFoundException.class, this::execute);
+
+		assertEquals(exception.getMessage(), "User with ID=1 not found!");
+	}
+
+	@Test
+
+	public void deleteFilmById_ShouldConfirmThatUsernameHasBeenDeleted() {
+		filmDbStorage.create(film);
+		filmDbStorage.delete(film.getId());
+		NotFoundException exception = assertThrows(NotFoundException.class, () -> filmDbStorage.getById(film.getId()));
+
+		assertEquals(exception.getMessage(), "Movie with ID = 1 not found!");
+	}
+
+	private void execute() {
+		userDbStorage.getById(user.getId());
 	}
 
 	@Test
@@ -178,28 +202,6 @@ class FilmorateApplicationTests {
 	}
 
 	@Test
-	public void getTopFilm_shouldReturnFilmsWithDirectors() {
-		filmDbStorage.create(film);
-		filmDbStorage.create(secondFilm);
-		filmDbStorage.create(thirdFilm);
-		userDbStorage.create(user);
-		userDbStorage.create(secondUser);
-		filmDbStorage.addLike(3, 1);
-		filmDbStorage.addLike(3, 2);
-		filmDbStorage.addLike(2, 1);
-		List<Film> films = filmDbStorage.getTopFilm(3);
-
-		assertAll("Проверка, что у самых популярных фильмов есть режиссеры",
-				() -> assertEquals(Set.of(director2), films.get(0).getDirectors(),
-						"Режиссеры первого фильма не совпадают с ожидаемыми"),
-				() -> assertEquals(Set.of(director1, director2), films.get(1).getDirectors(),
-						"Режиссеры второго фильма не совпадают с ожидаемыми"),
-				() -> assertEquals(Set.of(director1), films.get(2).getDirectors(),
-						"Режиссеры третьего фильма не совпадают с ожидаемыми"));
-
-	}
-
-	@Test
 	public void shouldReturnDirectorsFilmsSortedByYear() {
 		filmDbStorage.create(film);
 		filmDbStorage.create(secondFilm);
@@ -222,6 +224,10 @@ class FilmorateApplicationTests {
 		filmDbStorage.addLike(2, 1);
 		filmDbStorage.addLike(2, 2);
 		filmDbStorage.addLike(3, 1);
+		film.addLike(1);
+		secondFilm.addLike(1);
+		secondFilm.addLike(2);
+		thirdFilm.addLike(1);
 
 		List<Film> films = filmDbStorage.getDirectorFilmsSortedByLikes(1);
 		assertAll("Проверка фильмов режиссера, отсортированных по количеству лайков",

@@ -50,9 +50,8 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public String delete(int id) {
+    public void delete(int id) {
         films.remove(id);
-        return "";
     }
 
     @Override
@@ -67,7 +66,7 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public void addGenre(int filmId, Set<Genre> genres) {
-        films.get(filmId).setGenres(genres);
+        films.get(filmId).setGenres((SortedSet<Genre>) genres);
     }
 
     @Override
@@ -81,21 +80,18 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getTopFilm(Integer count) {
-        return new ArrayList<>(films.values().stream()
-                .sorted((f1, f2) -> {
-                    if (f1.getLikes().size() == f2.getLikes().size()) {
-                        return 0;
-                    }
-                    return (f1.getLikes().size() > f2.getLikes().size()) ? -1 : 1;
-                })
-                .limit(count)
-                .collect(Collectors.toUnmodifiableList()));
-    }
-
-    @Override
     public List<Film> getDirectorFilmsSortedByLikes(Integer directorId) {
-        return null;
+        return new ArrayList<>(films.values().stream()
+                .filter(film -> {
+                    for (Director filmDirector : film.getDirectors()) {
+                        if (filmDirector.getId() == directorId) {
+                            return true;
+                        }
+                    }
+                    return false;
+                })
+                .sorted(Comparator.comparing(Film::countLikes))
+                .collect(Collectors.toUnmodifiableList()));
     }
 
     @Override
