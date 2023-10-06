@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.repository.interfaces.FilmStorage;
 import ru.yandex.practicum.filmorate.repository.interfaces.UserStorage;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
@@ -19,11 +20,15 @@ import java.util.stream.Collectors;
 public class FilmService {
     private final UserStorage userStorage;
     private final FilmStorage filmStorage;
+    private final GenreService genreService;
 
     @Autowired
-    public FilmService(@Qualifier("FilmDbStorage") FilmStorage filmStorage, @Qualifier("UserDbStorage") UserStorage userStorage) {
+    public FilmService(@Qualifier("FilmDbStorage") FilmStorage filmStorage,
+                       @Qualifier("UserDbStorage") UserStorage userStorage,
+                       GenreService genreService) {
         this.userStorage = userStorage;
         this.filmStorage = filmStorage;
+        this.genreService = genreService;
     }
 
     public Collection<Film> getAll() {
@@ -84,9 +89,28 @@ public class FilmService {
         }
     }
 
-    public List<Film> getTopFilm(int volume) {
+    /**
+     * Возвращает список самых популярных фильмов, ограниченный по жанрам и году релиза
+     * @param count количество фильмов в списке
+     * @param genreId Id жанра фильмов
+     * @param year год релиза фильмов
+     */
+    public List<Film> getTopFilm(int count, Integer genreId, Integer year) {
         log.info("Requested a list of popular movies");
-        return getAll().stream().sorted(Comparator.comparingInt(Film::countLikes).reversed())
-                .limit(volume).collect(Collectors.toList());
+        List<Film> topFilms = new ArrayList<>(getAll());
+
+        if (genreId != null) {
+            topFilms = topFilms.stream()
+                    .filter(film -> film.getGenres().contains(genreService.getGenreById(genreId)))
+                    .collect(Collectors.toList());
+        }
+        if (year != null) {
+            topFilms = topFilms.stream()
+                    .filter(film -> film.getReleaseDate().getYear() == year)
+                    .collect(Collectors.toList());
+        }
+
+        return topFilms.stream().sorted(Comparator.comparingInt(Film::countLikes).reversed())
+                .limit(count).collect(Collectors.toList());
     }
 }
