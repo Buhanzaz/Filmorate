@@ -100,9 +100,8 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public String delete(int id) {
+    public void delete(int id) {
         users.remove(id);
-        return "";
     }
 
     @Override

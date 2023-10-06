@@ -9,9 +9,10 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.repository.interfaces.FilmStorage;
 import ru.yandex.practicum.filmorate.repository.interfaces.UserStorage;
 
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -85,6 +86,7 @@ public class FilmService {
 
     public List<Film> getTopFilm(int volume) {
         log.info("Requested a list of popular movies");
-        return new ArrayList<>(filmStorage.getTopFilm(volume));
+        return getAll().stream().sorted(Comparator.comparingInt(Film::countLikes).reversed())
+                .limit(volume).collect(Collectors.toList());
     }
 }
