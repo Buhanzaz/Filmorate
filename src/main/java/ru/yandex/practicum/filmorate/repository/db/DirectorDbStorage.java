@@ -61,9 +61,6 @@ public class DirectorDbStorage implements DirectorStorage {
         getDirectorById(id);
         String sql = "DELETE FROM DIRECTORS WHERE DIRECTOR_ID = ?";
         jdbcTemplate.update(sql, id);
-
-        sql = "DELETE FROM FILM_DIRECTORS WHERE DIRECTOR_ID = ?";
-        jdbcTemplate.update(sql, id);
     }
 
     private Director makeDirector(ResultSet rs) throws SQLException {
