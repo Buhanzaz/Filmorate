@@ -94,6 +94,7 @@ public class FilmService {
     }
 
     public List<Film> getDirectorFilm(int directorId, String sortType) {
+        log.info("Requested a list of films of director with id {}, sorted by {}", directorId, sortType);
         directorStorage.getDirectorById(directorId);
         switch (sortType) {
             case "year":
