@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.repository.interfaces.DirectorStorage;
 import ru.yandex.practicum.filmorate.repository.interfaces.FilmStorage;
 import ru.yandex.practicum.filmorate.repository.interfaces.UserStorage;
 
@@ -21,14 +22,17 @@ public class FilmService {
     private final UserStorage userStorage;
     private final FilmStorage filmStorage;
     private final GenreService genreService;
+    private final DirectorStorage directorStorage;
 
     @Autowired
     public FilmService(@Qualifier("FilmDbStorage") FilmStorage filmStorage,
                        @Qualifier("UserDbStorage") UserStorage userStorage,
-                       GenreService genreService) {
+                       GenreService genreService,
+                       DirectorStorage directorStorage) {
         this.userStorage = userStorage;
         this.filmStorage = filmStorage;
         this.genreService = genreService;
+        this.directorStorage = directorStorage;
     }
 
     public Collection<Film> getAll() {
@@ -112,5 +116,18 @@ public class FilmService {
 
         return topFilms.stream().sorted(Comparator.comparingInt(Film::countLikes).reversed())
                 .limit(count).collect(Collectors.toList());
+    }
+
+    public List<Film> getDirectorFilm(int directorId, String sortType) {
+        log.info("Requested a list of films of director with id {}, sorted by {}", directorId, sortType);
+        directorStorage.getDirectorById(directorId);
+        switch (sortType) {
+            case "year":
+                return filmStorage.getDirectorFilmsSortedByYear(directorId);
+            case "likes":
+                return filmStorage.getDirectorFilmsSortedByLikes(directorId);
+            default:
+                throw new NotFoundException(String.format("The type of sorting: %s not found", sortType));
+        }
     }
 }

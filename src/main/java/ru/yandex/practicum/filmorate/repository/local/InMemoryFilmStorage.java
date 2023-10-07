@@ -5,12 +5,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.local.UserException;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.util.IdGenerator;
 import ru.yandex.practicum.filmorate.repository.interfaces.FilmStorage;
+import ru.yandex.practicum.filmorate.util.IdGenerator;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Getter
 @Repository
@@ -77,4 +79,33 @@ public class InMemoryFilmStorage implements FilmStorage {
         films.get(filmId).deleteLike(userId);
     }
 
+    @Override
+    public List<Film> getDirectorFilmsSortedByLikes(Integer directorId) {
+        return new ArrayList<>(films.values().stream()
+                .filter(film -> {
+                    for (Director filmDirector : film.getDirectors()) {
+                        if (filmDirector.getId() == directorId) {
+                            return true;
+                        }
+                    }
+                    return false;
+                })
+                .sorted(Comparator.comparing(Film::countLikes))
+                .collect(Collectors.toUnmodifiableList()));
+    }
+
+    @Override
+    public List<Film> getDirectorFilmsSortedByYear(int directorId) {
+        return new ArrayList<>(films.values().stream()
+                .filter(film -> {
+                    for (Director filmDirector : film.getDirectors()) {
+                        if (filmDirector.getId() == directorId) {
+                            return true;
+                        }
+                    }
+                    return false;
+                })
+                .sorted(Comparator.comparing(Film::getReleaseDate))
+                .collect(Collectors.toUnmodifiableList()));
+    }
 }

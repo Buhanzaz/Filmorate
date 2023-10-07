@@ -1,6 +1,9 @@
 package ru.yandex.practicum.filmorate.model;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.hibernate.validator.constraints.Length;
 import ru.yandex.practicum.filmorate.annotation.AfterDate;
 
@@ -38,6 +41,8 @@ public class Film {
     @Builder.Default
     @EqualsAndHashCode.Exclude
     private SortedSet<Genre> genres = new TreeSet<>();
+    @Builder.Default
+    private Set<Director> directors = new HashSet<>();
 
     private RatingMpa mpa;
 
