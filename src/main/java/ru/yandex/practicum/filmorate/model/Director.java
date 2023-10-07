@@ -10,7 +10,7 @@ import javax.validation.constraints.NotBlank;
 @AllArgsConstructor
 @Builder
 public class Director {
-    int id;
+    private int id;
     @NotBlank
-    String name;
+    private String name;
 }

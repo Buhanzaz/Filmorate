@@ -60,10 +60,6 @@ public class Film {
         genres.add(genre);
     }
 
-    public void addDirector(Director director) {
-        directors.add(director);
-    }
-
     public int countLikes() {
         return likes.size();
     }

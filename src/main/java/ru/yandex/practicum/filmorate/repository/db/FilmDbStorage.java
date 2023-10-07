@@ -178,12 +178,12 @@ public class FilmDbStorage implements FilmStorage {
 
     private Set<Director> getDirectors(int filmId) {
         Comparator<Director> compId = Comparator.comparing(Director::getId);
-        Set<Director> genres = new TreeSet<>(compId);
+        Set<Director> directors = new TreeSet<>(compId);
         String sqlQuery = "SELECT D.DIRECTOR_ID, D.NAME FROM DIRECTORS AS D "
                 + "JOIN FILM_DIRECTORS AS FD ON D.DIRECTOR_ID = FD.DIRECTOR_ID "
                 + "WHERE FILM_ID = ?";
-        genres.addAll(jdbcTemplate.query(sqlQuery, this::makeDirector, filmId));
-        return genres;
+        directors.addAll(jdbcTemplate.query(sqlQuery, this::makeDirector, filmId));
+        return directors;
     }
 
     public void addLike(int filmId, int userId) {
@@ -240,7 +240,7 @@ public class FilmDbStorage implements FilmStorage {
 
         films.forEach(film -> filmDirectors.stream()
                 .filter(filmDirector -> film.getId() == filmDirector.filmId)
-                .forEach(filmDirector -> film.addDirector(new Director(filmDirector.directorId,
+                .forEach(filmDirector -> film.getDirectors().add(new Director(filmDirector.directorId,
                         filmDirector.directorName))));
 
         return films;
@@ -281,9 +281,9 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     private Director makeDirector(ResultSet rs, int id) throws SQLException {
-        Integer directorId = rs.getInt("director_id");
+        int directorId = rs.getInt("director_id");
         String name = rs.getString("name");
-        return new Director(directorId, name);
+        return Director.builder().id(directorId).name(name).build();
     }
 
     private Film makeFilm(ResultSet rs, int id) throws SQLException {
@@ -317,7 +317,6 @@ public class FilmDbStorage implements FilmStorage {
         String mpaName = srs.getString("rating");
         RatingMpa mpa = new RatingMpa(mpaId, mpaName);
         SortedSet<Genre> genres = getGenres(id);
-        Set<Director> directors = getDirectors(id);
 
         return Film.builder()
                 .id(id)
@@ -326,7 +325,7 @@ public class FilmDbStorage implements FilmStorage {
                 .duration(duration)
                 .mpa(mpa)
                 .genres(genres)
-                .directors(directors)
+                .directors(getDirectors(id))
                 .releaseDate(releaseDate)
                 .build();
     }
