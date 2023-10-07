@@ -9,5 +9,5 @@ public interface LikesStorage {
 
     void removeLike(int filmId, int userId);
 
-    List<Film> getTopFilm(Integer count);
+   List<Film> getDirectorFilmsSortedByLikes(Integer directorId);
 }
