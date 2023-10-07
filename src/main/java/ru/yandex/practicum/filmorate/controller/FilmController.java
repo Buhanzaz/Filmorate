@@ -64,4 +64,9 @@ public class FilmController {
                                  @RequestParam(required = false) Integer year) {
         return filmService.getTopFilm(count, genreId, year);
     }
+
+    @GetMapping("director/{directorId}")
+    public List<Film> getDirectorFilm(@PathVariable Integer directorId, @RequestParam String sortBy) {
+        return filmService.getDirectorFilm(directorId, sortBy);
+    }
 }
