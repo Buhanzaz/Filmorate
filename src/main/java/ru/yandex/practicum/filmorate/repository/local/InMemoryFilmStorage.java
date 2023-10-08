@@ -4,6 +4,7 @@ import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.constants.SearchBy;
 import ru.yandex.practicum.filmorate.exception.local.UserException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -107,5 +108,24 @@ public class InMemoryFilmStorage implements FilmStorage {
                 })
                 .sorted(Comparator.comparing(Film::getReleaseDate))
                 .collect(Collectors.toUnmodifiableList()));
+    }
+
+    @Override
+    public List<Film> searchFilms(String query, Set<SearchBy> searchBy) {
+        return films.values().stream()
+                .filter(film -> {
+                    if (searchBy.contains(SearchBy.TITLE) && film.getName().contains(query)) {
+                        return true;
+                    }
+                    if (!searchBy.contains(SearchBy.DIRECTOR)) {
+                        return false;
+                    }
+                    for (Director director : film.getDirectors()) {
+                        if (director.getName().contains(query)) {
+                            return true;
+                        }
+                    }
+                    return false;
+                }).sorted(Comparator.comparing(Film::countLikes)).collect(Collectors.toList());
     }
 }
