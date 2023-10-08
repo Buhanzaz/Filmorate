@@ -48,23 +48,21 @@ public class ReviewDbStorage implements ReviewStorage {
     }
 
     @Override
-    public Review update(Review review) {
+    public int update(Review review) {
         String update = "update reviews " +
                 "set content = ?, is_positive = ? " +
                 "where id = ?";
 
-        jdbcTemplate.update(
+        return jdbcTemplate.update(
                 update,
                 review.getContent(),
                 review.getIsPositive(),
                 review.getReviewId());
-
-        return findById(review.getReviewId());
     }
 
     @Override
-    public void removeById(Integer id) {
-        jdbcTemplate.update("delete from reviews where id = ?", id);
+    public int removeById(Integer id) {
+        return jdbcTemplate.update("delete from reviews where id = ?", id);
     }
 
     @Override
@@ -120,15 +118,13 @@ public class ReviewDbStorage implements ReviewStorage {
     }
 
     @Override
-    public Review removeLike(Integer id, Integer userId) {
+    public int removeLike(Integer id, Integer userId) {
         String delete = "delete from reviews_likes where review_id = ? and user_id = ?";
 
-        jdbcTemplate.update(
+        return jdbcTemplate.update(
                 delete,
                 id,
                 userId);
-
-        return findById(id);
     }
 
     @Override

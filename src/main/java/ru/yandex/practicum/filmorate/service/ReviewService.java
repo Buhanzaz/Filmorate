@@ -50,24 +50,23 @@ public class ReviewService {
         }
     }
 
-    public List<Review> findAllOrByFilmId(String id, String count) {
-        int intCount = Integer.parseInt(count);
+    public List<Review> findAllOrByFilmId(Integer id, Integer count) {
         if (id == null) {
             log.info("Get REVIEWS for all FILMS");
             return reviewStorage.findAll();
         } else {
-            int intId = Integer.parseInt(id);
-            log.info("Get REVIEWS for FILM with ID = {}", intId);
-            return reviewStorage.findAllByFilmId(intId, intCount);
+            log.info("Get REVIEWS for FILM with ID = {}", id);
+            return reviewStorage.findAllByFilmId(id, count);
         }
     }
 
     public Review update(Review review) {
-        log.info("Check if REVIEW with ID = {} exists", review.getReviewId());
-        findById(review.getReviewId());
-
         log.info("Update REVIEW with ID = {}", review.getReviewId());
-        return reviewStorage.update(review);
+        if (reviewStorage.update(review) == 0) {
+            throw new NotFoundException(
+                    String.format("REVIEW with ID = %s does not exists", review.getReviewId()));
+        }
+        return findById(review.getReviewId());
     }
 
     public Review addLike(Integer id, Integer userId, int grade) {
@@ -78,25 +77,23 @@ public class ReviewService {
     }
 
     public Review removeLike(Integer id, Integer userId) {
-        checkUserAndLikeExists(id, userId);
-
         log.info("Remove REVIEW with ID = {} from USER with ID = {}", id, userId);
-        return reviewStorage.removeLike(id, userId);
+        if (reviewStorage.removeLike(id, userId) == 0) {
+            checkUserAndLikeExists(id, userId);
+        }
+        return findById(id);
     }
 
     public void removeById(Integer id) {
-        log.info("Check if REVIEW with ID = {} exists", id);
-        findById(id);
-
         log.info("Remove REVIEW with ID = {}", id);
-        reviewStorage.removeById(id);
+        if (reviewStorage.removeById(id) == 0) {
+            log.info("Check if REVIEW with ID = {} exists", id);
+            findById(id);
+        }
     }
 
     private void checkUserAndLikeExists(Integer reviewId, Integer userId) {
-        log.info("Check if REVIEW with ID = {} exists", reviewId);
         findById(reviewId);
-
-        log.info("Check if USER with ID = {} exists", userId);
         userStorage.getById(userId);
     }
 }

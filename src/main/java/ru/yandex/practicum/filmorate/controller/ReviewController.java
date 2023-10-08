@@ -43,8 +43,8 @@ public class ReviewController {
     }
 
     @GetMapping
-    public List<Review> findAllOrByFilmId(@RequestParam(required = false) String filmId,
-                                          @RequestParam(defaultValue = "10") String count) {
+    public List<Review> findAllOrByFilmId(@RequestParam(required = false) Integer filmId,
+                                          @RequestParam(defaultValue = "10") Integer count) {
         return reviewService.findAllOrByFilmId(filmId, count);
     }
 

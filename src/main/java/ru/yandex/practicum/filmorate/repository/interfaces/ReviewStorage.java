@@ -7,9 +7,9 @@ import java.util.List;
 public interface ReviewStorage {
     Review add(Review review);
 
-    Review update(Review review);
+    int update(Review review);
 
-    void removeById(Integer id);
+    int removeById(Integer id);
 
     List<Review> findAllByFilmId(Integer id, int count);
 
@@ -17,7 +17,7 @@ public interface ReviewStorage {
 
     Review addLike(Integer id, Integer userId, int grade);
 
-    Review removeLike(Integer id, Integer userId);
+    int removeLike(Integer id, Integer userId);
 
     List<Review> findAll();
 }
