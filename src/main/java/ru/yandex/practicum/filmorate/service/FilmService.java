@@ -93,12 +93,6 @@ public class FilmService {
         }
     }
 
-    /**
-     * Возвращает список самых популярных фильмов, ограниченный по жанрам и году релиза
-     * @param count количество фильмов в списке
-     * @param genreId Id жанра фильмов
-     * @param year год релиза фильмов
-     */
     public List<Film> getTopFilm(int count, Integer genreId, Integer year) {
         log.info("Requested a list of popular movies");
         List<Film> topFilms = new ArrayList<>(getAll());
