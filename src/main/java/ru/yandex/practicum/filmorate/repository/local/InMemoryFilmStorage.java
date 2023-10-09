@@ -113,7 +113,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     public List<Film> getRecommendedFilms(int userId) {
         return null;
     }
-  
+
     public List<Film> getFilmsByUserId(int userId) {
         return films.values().stream()
                 .filter(film -> film.getLikes().contains(userId))
