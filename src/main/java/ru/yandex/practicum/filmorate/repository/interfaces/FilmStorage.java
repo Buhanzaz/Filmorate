@@ -23,6 +23,6 @@ public interface FilmStorage extends LikesStorage {
     List<Film> getDirectorFilmsSortedByYear(int directorId);
 
     List<Film> getRecommendedFilms(int userId);
-  
+
     List<Film> getFilmsByUserId(int userId);
 }
