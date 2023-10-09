@@ -124,4 +124,17 @@ public class FilmService {
                 throw new NotFoundException(String.format("The type of sorting: %s not found", sortType));
         }
     }
+
+    public List<Film> getCommonFilms(int userId, int friendId) {
+        userStorage.getById(userId);
+        List<Film> userFilms = filmStorage.getFilmsByUserId(userId);
+
+        userStorage.getById(friendId);
+        List<Film> friendFilms = filmStorage.getFilmsByUserId(friendId);
+
+        return userFilms.stream()
+                .filter(friendFilms::contains)
+                .sorted(Comparator.comparing(Film::countLikes).reversed())
+                .collect(Collectors.toList());
+    }
 }

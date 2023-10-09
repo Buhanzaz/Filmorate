@@ -108,4 +108,11 @@ public class InMemoryFilmStorage implements FilmStorage {
                 .sorted(Comparator.comparing(Film::getReleaseDate))
                 .collect(Collectors.toUnmodifiableList()));
     }
+
+    @Override
+    public List<Film> getFilmsByUserId(int userId) {
+        return films.values().stream()
+                .filter(film -> film.getLikes().contains(userId))
+                .collect(Collectors.toList());
+    }
 }
