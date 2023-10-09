@@ -230,6 +230,17 @@ public class FilmDbStorage implements FilmStorage {
         return addDirectorsInFilm(addLikesInFilms(addGenreInFilms(films)));
     }
 
+    @Override
+    public List<Film> getFilmsByUserId(int userId) {
+        String sqlQuery = "SELECT * FROM FILMS F" +
+                " JOIN MPA_RATING MR ON F.MPA_RATING_ID = MR.RATING_ID" +
+                " LEFT JOIN LIKES L ON F.FILM_ID = L.FILM_ID" +
+                " WHERE USER_ID = ?";
+
+        List<Film> films = jdbcTemplate.query(sqlQuery, this::makeFilm, userId);
+        return addDirectorsInFilm(addLikesInFilms(addGenreInFilms(films)));
+    }
+
     private List<Film> addDirectorsInFilm(List<Film> films) {
         String sql = "SELECT FD.FILM_ID, FD.DIRECTOR_ID, D.NAME " +
                 "FROM FILM_DIRECTORS AS FD " +
@@ -350,16 +361,5 @@ public class FilmDbStorage implements FilmStorage {
         int filmId;
         int directorId;
         String directorName;
-    }
-
-    @Override
-    public List<Film> getFilmsByUserId(int userId) {
-        String sqlQuery = "SELECT * FROM FILMS F" +
-                " JOIN MPA_RATING MR ON F.MPA_RATING_ID = MR.RATING_ID" +
-                " LEFT JOIN LIKES L ON F.FILM_ID = L.FILM_ID" +
-                " WHERE USER_ID = ?";
-
-        List<Film> films = jdbcTemplate.query(sqlQuery, this::makeFilm, userId);
-        return addDirectorsInFilm(addLikesInFilms(addGenreInFilms(films)));
     }
 }
