@@ -21,4 +21,6 @@ public interface FilmStorage extends LikesStorage {
     void addGenre(int filmId, Set<Genre> genres);
 
     List<Film> getDirectorFilmsSortedByYear(int directorId);
+
+    List<Film> getRecommendedFilms(int userId);
 }
