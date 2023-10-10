@@ -91,6 +91,8 @@ public class UserDbStorage implements UserStorage {
         while (rowSet.next()) {
             result.add(logMap(rowSet));
         }
+
+        result.sort(Comparator.comparing(Event::getTimestamp));
         return result;
     }
 
