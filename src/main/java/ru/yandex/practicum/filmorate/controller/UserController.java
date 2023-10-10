@@ -74,6 +74,7 @@ public class UserController {
     public List<Event> getLogEvents(@PathVariable Integer id) {
         return userService.getLogEvents(id);
     }
+
     @GetMapping("/{id}/recommendations")
     public List<Film> getRecommendedFilmsForUser(@PathVariable Integer id) {
         return userService.getRecommendedFilmsForUser(id);
