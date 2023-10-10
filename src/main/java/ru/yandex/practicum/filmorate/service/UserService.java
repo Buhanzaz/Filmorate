@@ -95,7 +95,7 @@ public class UserService {
     }
 
     public List<Film> getRecommendedFilmsForUser(Integer userId) {
-        getById(userId);
+        checkUser(userId);
         return filmDbStorage.getRecommendedFilms(userId);
     }
 
