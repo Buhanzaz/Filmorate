@@ -7,7 +7,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.repository.db.FilmDbStorage;
 import ru.yandex.practicum.filmorate.repository.interfaces.UserStorage;
 
 import java.util.Collection;
@@ -18,10 +20,12 @@ import java.util.List;
 @Slf4j
 public class UserService {
     private final UserStorage storage;
+    private final FilmDbStorage filmDbStorage;
 
     @Autowired
-    public UserService(@Qualifier("UserDbStorage") UserStorage storage) {
+    public UserService(@Qualifier("UserDbStorage") UserStorage storage, @Qualifier("FilmDbStorage") FilmDbStorage filmDbStorage) {
         this.storage = storage;
+        this.filmDbStorage = filmDbStorage;
     }
 
     public Collection<User> getAll() {
@@ -88,6 +92,11 @@ public class UserService {
         List<Event> result = storage.getLogEvents(userId);
         log.info("Getting user logs. User = " + userId);
         return result;
+    }
+
+    public List<Film> getRecommendedFilmsForUser(Integer userId) {
+        getById(userId);
+        return filmDbStorage.getRecommendedFilms(userId);
     }
 
     private void changeName(User user) {

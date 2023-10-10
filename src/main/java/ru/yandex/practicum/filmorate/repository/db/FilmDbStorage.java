@@ -234,6 +234,34 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
+    public List<Film> getRecommendedFilms(int userId) {
+        String sql = "SELECT f.*, m.rating " +
+                "FROM films AS f " +
+                "JOIN mpa_rating AS m ON m.rating_id = f.mpa_rating_id " +
+                "WHERE f.film_id IN " +
+                "(SELECT DISTINCT l.film_id " +
+                "FROM likes AS l " +
+                "WHERE l.user_id IN " +
+                "(SELECT u.user_id " +
+                "FROM (SELECT user_id, COUNT(*) AS matches " +
+                "FROM likes " +
+                "WHERE NOT user_id = ? " +
+                "AND film_id IN " +
+                "(SELECT film_id " +
+                "FROM likes " +
+                "WHERE user_id = ?) " +
+                "GROUP BY user_id " +
+                "ORDER BY COUNT(*) DESC " +
+                "LIMIT 1) AS u) " +
+                "AND l.film_id NOT IN " +
+                "(SELECT film_id " +
+                "FROM likes " +
+                "WHERE user_id = ?))";
+
+        List<Film> filmList = jdbcTemplate.query(sql, this::makeFilm, userId, userId, userId);
+        return addDirectorsInFilm(addLikesInFilms(addGenreInFilms(filmList)));
+    }
+
     public List<Film> getFilmsByUserId(int userId) {
         String sqlQuery = "SELECT * FROM FILMS F" +
                 " JOIN MPA_RATING MR ON F.MPA_RATING_ID = MR.RATING_ID" +
