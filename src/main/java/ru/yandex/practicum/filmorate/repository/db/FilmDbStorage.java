@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.repository.db;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -14,6 +15,8 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.RatingMpa;
 import ru.yandex.practicum.filmorate.repository.interfaces.FilmStorage;
+import ru.yandex.practicum.filmorate.repository.enums.EventType;
+import ru.yandex.practicum.filmorate.repository.enums.Operation;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -25,12 +28,10 @@ import java.util.stream.Collectors;
 
 @Repository
 @Qualifier("FilmDbStorage")
+@RequiredArgsConstructor
 public class FilmDbStorage implements FilmStorage {
     private final JdbcTemplate jdbcTemplate;
-
-    public FilmDbStorage(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
+    private final LogEventDbStorage logEventDbStorage;
 
     @Override
     public Collection<Film> getAllFilm() {
@@ -190,12 +191,14 @@ public class FilmDbStorage implements FilmStorage {
         String sqlQuery = "INSERT INTO likes (FILM_ID, user_id) "
                 + "VALUES (?, ?)";
         jdbcTemplate.update(sqlQuery, filmId, userId);
+        logEventDbStorage.logging(userId, EventType.LIKE, Operation.ADD, filmId);
     }
 
     public void removeLike(int filmId, int userId) {
         String sqlQuery = "DELETE FROM LIKES WHERE FILM_ID = ? AND user_id = ?";
 
         jdbcTemplate.update(sqlQuery, filmId, userId);
+        logEventDbStorage.logging(userId, EventType.LIKE, Operation.REMOVE, filmId);
     }
 
     @Override

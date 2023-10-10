@@ -5,8 +5,12 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.repository.enums.EventType;
+import ru.yandex.practicum.filmorate.repository.enums.Operation;
 import ru.yandex.practicum.filmorate.repository.interfaces.ReviewStorage;
 
 import java.sql.PreparedStatement;
@@ -20,6 +24,7 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class ReviewDbStorage implements ReviewStorage {
     private final JdbcTemplate jdbcTemplate;
+    private final LogEventDbStorage logEventDbStorage;
 
     @Override
     public Review add(Review review) {
@@ -43,6 +48,7 @@ public class ReviewDbStorage implements ReviewStorage {
 
         review.setReviewId(reviewId);
         review.setUseful(0);
+        logEventDbStorage.logging(review.getUserId(), EventType.REVIEW, Operation.ADD, reviewId);
 
         return review;
     }
@@ -52,7 +58,9 @@ public class ReviewDbStorage implements ReviewStorage {
         String update = "update reviews " +
                 "set content = ?, is_positive = ? " +
                 "where id = ?";
+        int userId = getUserIdFromReview(review.getReviewId());
 
+        logEventDbStorage.logging(userId, EventType.REVIEW, Operation.UPDATE, review.getReviewId());
         return jdbcTemplate.update(
                 update,
                 review.getContent(),
@@ -60,8 +68,23 @@ public class ReviewDbStorage implements ReviewStorage {
                 review.getReviewId());
     }
 
+    private int getUserIdFromReview(Integer id) {
+        String sqlQuery = "select USER_ID from REVIEWS where ID = ?";
+
+        try {
+            SqlRowSet rowSet = jdbcTemplate.queryForRowSet(sqlQuery, id);
+
+            rowSet.next();
+            return rowSet.getInt("user_id");
+        } catch (NotFoundException e) {
+            throw new NotFoundException("Reviews with ID=" + id + " not found!");
+        }
+    }
+
     @Override
     public int removeById(Integer id) {
+        Review review = findById(id);
+        logEventDbStorage.logging(review.getUserId(), EventType.REVIEW, Operation.REMOVE, review.getReviewId());
         return jdbcTemplate.update("delete from reviews where id = ?", id);
     }
 
@@ -113,7 +136,6 @@ public class ReviewDbStorage implements ReviewStorage {
                 id,
                 userId,
                 grade);
-
         return findById(id);
     }
 

@@ -1,24 +1,27 @@
 package ru.yandex.practicum.filmorate.repository.db;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.repository.enums.EventType;
+import ru.yandex.practicum.filmorate.repository.enums.Operation;
 import ru.yandex.practicum.filmorate.repository.interfaces.UserStorage;
 
+import java.sql.Timestamp;
 import java.util.*;
 
 @Repository
 @Qualifier("UserDbStorage")
+@RequiredArgsConstructor
 public class UserDbStorage implements UserStorage {
     private final JdbcTemplate jdbcTemplate;
-
-    public UserDbStorage(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
+    private final LogEventDbStorage logEventDbStorage;
 
     @Override
     public Collection<User> getAll() {
@@ -64,7 +67,7 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public void delete(int userId) {
+    public void delete(Integer userId) {
         jdbcTemplate.update("DELETE FROM USERS WHERE USER_ID = ?", userId);
     }
 
@@ -79,14 +82,31 @@ public class UserDbStorage implements UserStorage {
         }
     }
 
+    @Override
+    public List<Event> getLogEvents(Integer userId) {
+        String sqlQuery = "SELECT * FROM LOG_EVENT WHERE USER_ID = ?";
+        SqlRowSet rowSet = jdbcTemplate.queryForRowSet(sqlQuery, userId);
+        List<Event> result = new ArrayList<>();
+
+        while (rowSet.next()) {
+            result.add(logMap(rowSet));
+        }
+
+        result.sort(Comparator.comparing(Event::getTimestamp));
+        return result;
+    }
+
+
     public void addFriend(int userId, int friendId) {
         String sqlQuery = "MERGE into FRIENDS KEY(USER_ID, FRIEND_ID) VALUES(?, ?, true)";
         jdbcTemplate.update(sqlQuery, userId, friendId);
+        logEventDbStorage.logging(userId, EventType.FRIEND, Operation.ADD, friendId);
     }
 
     public void removeFriend(int userId, int friendId) {
         String sqlQuery = "DELETE FROM FRIENDS WHERE USER_ID = ? AND FRIEND_ID = ?";
         jdbcTemplate.update(sqlQuery, userId, friendId);
+        logEventDbStorage.logging(userId, EventType.FRIEND, Operation.REMOVE, friendId);
     }
 
     public List<User> getFriendsById(int userId) {
@@ -119,6 +139,19 @@ public class UserDbStorage implements UserStorage {
                 + "USER_ID = ? AND FRIEND_ID = ?";
         SqlRowSet rowSet = jdbcTemplate.queryForRowSet(sqlQuery, userId, friendId);
         return rowSet.next();
+    }
+
+    private static Event logMap(SqlRowSet rowSet) {
+        Timestamp timestamp = rowSet.getTimestamp("timestamp");
+        Long millis = Objects.requireNonNull(timestamp).getTime();
+        return Event.builder()
+                .timestamp(millis)
+                .userId(rowSet.getInt("user_id"))
+                .eventType(EventType.valueOf(rowSet.getString("event_type")))
+                .operation(Operation.valueOf(rowSet.getString("operation")))
+                .eventId(rowSet.getInt("event_id"))
+                .entityId(rowSet.getInt("entity_id"))
+                .build();
     }
 
     private static User userMap(SqlRowSet rowSet) {
