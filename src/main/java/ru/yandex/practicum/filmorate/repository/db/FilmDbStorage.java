@@ -232,6 +232,17 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
+    public List<Film> getFilmsByUserId(int userId) {
+        String sqlQuery = "SELECT * FROM FILMS F" +
+                " JOIN MPA_RATING MR ON F.MPA_RATING_ID = MR.RATING_ID" +
+                " LEFT JOIN LIKES L ON F.FILM_ID = L.FILM_ID" +
+                " WHERE USER_ID = ?";
+
+        List<Film> films = jdbcTemplate.query(sqlQuery, this::makeFilm, userId);
+        return addDirectorsInFilm(addLikesInFilms(addGenreInFilms(films)));
+    }
+
+    @Override
     public List<Film> searchFilms(String query, Set<SearchBy> searchBy) {
         String sql = "SELECT * FROM FILMS AS F "
                 + "LEFT JOIN MPA_RATING AS MPA ON F.MPA_RATING_ID = MPA.RATING_ID "
@@ -248,6 +259,7 @@ public class FilmDbStorage implements FilmStorage {
         return filmsWithExtraFields.stream().distinct().sorted(Comparator.comparingInt(Film::countLikes).reversed())
                 .collect(Collectors.toList());
     }
+
 
     private List<Film> addDirectorsInFilm(List<Film> films) {
         String sql = "SELECT FD.FILM_ID, FD.DIRECTOR_ID, D.NAME " +

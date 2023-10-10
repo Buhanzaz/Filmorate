@@ -19,14 +19,17 @@ import java.util.stream.Collectors;
 public class FilmService {
     private final UserStorage userStorage;
     private final FilmStorage filmStorage;
+    private final GenreService genreService;
     private final DirectorStorage directorStorage;
 
     @Autowired
     public FilmService(@Qualifier("FilmDbStorage") FilmStorage filmStorage,
                        @Qualifier("UserDbStorage") UserStorage userStorage,
+                       GenreService genreService,
                        DirectorStorage directorStorage) {
         this.userStorage = userStorage;
         this.filmStorage = filmStorage;
+        this.genreService = genreService;
         this.directorStorage = directorStorage;
     }
 
@@ -88,10 +91,23 @@ public class FilmService {
         }
     }
 
-    public List<Film> getTopFilm(int volume) {
+    public List<Film> getTopFilm(int count, Integer genreId, Integer year) {
         log.info("Requested a list of popular movies");
-        return getAll().stream().sorted(Comparator.comparingInt(Film::countLikes).reversed())
-                .limit(volume).collect(Collectors.toList());
+        List<Film> topFilms = new ArrayList<>(getAll());
+
+        if (genreId != null) {
+            topFilms = topFilms.stream()
+                    .filter(film -> film.getGenres().contains(genreService.getGenreById(genreId)))
+                    .collect(Collectors.toList());
+        }
+        if (year != null) {
+            topFilms = topFilms.stream()
+                    .filter(film -> film.getReleaseDate().getYear() == year)
+                    .collect(Collectors.toList());
+        }
+
+        return topFilms.stream().sorted(Comparator.comparingInt(Film::countLikes).reversed())
+                .limit(count).collect(Collectors.toList());
     }
 
     public List<Film> getDirectorFilm(int directorId, String sortType) {
@@ -107,11 +123,24 @@ public class FilmService {
         }
     }
 
+    public List<Film> getCommonFilms(int userId, int friendId) {
+        userStorage.getById(userId);
+        List<Film> userFilms = filmStorage.getFilmsByUserId(userId);
+
+        userStorage.getById(friendId);
+        List<Film> friendFilms = filmStorage.getFilmsByUserId(friendId);
+
+        return userFilms.stream()
+                .filter(friendFilms::contains)
+                .sorted(Comparator.comparing(Film::countLikes).reversed())
+                .collect(Collectors.toList());
+    }
+
     public List<Film> searchFilms(String query, String searchBy) {
         log.info("Requested most popular films, query = {}, searchBy = {}", query, searchBy);
 
         if (query == null || searchBy == null) {
-            return getTopFilm(Integer.MAX_VALUE);
+            return getTopFilm(Integer.MAX_VALUE, null, null);
         }
         Set<SearchBy> searchParams = new HashSet<>();
         if (searchBy.contains("title")) {

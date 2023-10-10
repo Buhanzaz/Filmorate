@@ -128,4 +128,11 @@ public class InMemoryFilmStorage implements FilmStorage {
                     return false;
                 }).sorted(Comparator.comparing(Film::countLikes)).collect(Collectors.toList());
     }
+
+    @Override
+    public List<Film> getFilmsByUserId(int userId) {
+        return films.values().stream()
+                .filter(film -> film.getLikes().contains(userId))
+                .collect(Collectors.toList());
+    }
 }
