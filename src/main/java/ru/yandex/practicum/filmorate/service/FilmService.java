@@ -137,4 +137,20 @@ public class FilmService {
                 .sorted(Comparator.comparing(Film::countLikes).reversed())
                 .collect(Collectors.toList());
     }
+
+    public List<Film> searchFilms(String query, String searchBy) {
+        log.info("Requested most popular films, query = {}, searchBy = {}", query, searchBy);
+
+        if (query == null || searchBy == null) {
+            return getTopFilm(Integer.MAX_VALUE, null, null);
+        }
+
+        boolean searchByTitle = searchBy.contains("title");
+        boolean searchByDirector = searchBy.contains("director");
+
+        if (!searchByTitle && !searchByDirector) {
+            throw new NotFoundException(String.format("Search parameters %s not found", searchBy));
+        }
+        return filmStorage.searchFilms(query, searchByTitle, searchByDirector);
+    }
 }

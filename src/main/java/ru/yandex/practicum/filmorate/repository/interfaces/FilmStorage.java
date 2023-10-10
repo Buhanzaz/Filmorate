@@ -24,5 +24,7 @@ public interface FilmStorage extends LikesStorage {
 
     List<Film> getRecommendedFilms(int userId);
 
+    List<Film> searchFilms(String query, boolean searchByTitle, boolean searchByDirector);
+
     List<Film> getFilmsByUserId(int userId);
 }
