@@ -4,14 +4,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.constants.SearchBy;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.repository.interfaces.DirectorStorage;
 import ru.yandex.practicum.filmorate.repository.interfaces.FilmStorage;
 import ru.yandex.practicum.filmorate.repository.interfaces.UserStorage;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -142,16 +144,13 @@ public class FilmService {
         if (query == null || searchBy == null) {
             return getTopFilm(Integer.MAX_VALUE, null, null);
         }
-        Set<SearchBy> searchParams = new HashSet<>();
-        if (searchBy.contains("title")) {
-            searchParams.add(SearchBy.TITLE);
-        }
-        if (searchBy.contains("director")) {
-            searchParams.add(SearchBy.DIRECTOR);
-        }
-        if (searchParams.isEmpty()) {
+
+        boolean searchByTitle = searchBy.contains("title");
+        boolean searchByDirector = searchBy.contains("director");
+
+        if (!searchByTitle && !searchByDirector) {
             throw new NotFoundException(String.format("Search parameters %s not found", searchBy));
         }
-        return filmStorage.searchFilms(query, searchParams);
+        return filmStorage.searchFilms(query, searchByTitle, searchByDirector);
     }
 }

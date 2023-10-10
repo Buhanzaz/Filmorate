@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.repository.interfaces;
 
-import ru.yandex.practicum.filmorate.constants.SearchBy;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 
@@ -23,7 +22,7 @@ public interface FilmStorage extends LikesStorage {
 
     List<Film> getDirectorFilmsSortedByYear(int directorId);
 
-    List<Film> searchFilms(String query, Set<SearchBy> searchBy);
+    List<Film> searchFilms(String query, boolean searchByTitle, boolean searchByDirector);
 
     List<Film> getFilmsByUserId(int userId);
 }
