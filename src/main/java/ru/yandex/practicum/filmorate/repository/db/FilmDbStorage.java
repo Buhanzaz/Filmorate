@@ -241,6 +241,32 @@ public class FilmDbStorage implements FilmStorage {
         return addDirectorsInFilm(addLikesInFilms(addGenreInFilms(films)));
     }
 
+    @Override
+    public List<Film> searchFilms(String query, boolean searchByTitle, boolean searchByDirector) {
+        String sql = "SELECT * FROM FILMS AS F "
+                + "LEFT JOIN MPA_RATING AS MPA ON F.MPA_RATING_ID = MPA.RATING_ID "
+                + "LEFT JOIN FILM_DIRECTORS AS FD ON F.FILM_ID = FD.FILM_ID "
+                + "LEFT JOIN DIRECTORS AS D ON FD.DIRECTOR_ID = D.DIRECTOR_ID "
+                + "WHERE ";
+
+        String searchQuery;
+        String searchByTitleQuery = "LOWER(F.NAME) LIKE '%" + query.toLowerCase() + "%'";
+        String searchByDirectorQuery = "LOWER(D.NAME) LIKE '%" + query.toLowerCase() + "%'";
+
+        if (searchByTitle && searchByDirector) {
+            searchQuery = searchByTitleQuery + " OR " + searchByDirectorQuery;
+        } else if (searchByTitle) {
+            searchQuery = searchByTitleQuery;
+        } else {
+            searchQuery = searchByDirectorQuery;
+        }
+
+        List<Film> films = jdbcTemplate.query(sql + searchQuery, this::makeFilm);
+        List<Film> filmsWithExtraFields = addDirectorsInFilm(addLikesInFilms(addGenreInFilms(films)));
+        return filmsWithExtraFields.stream().distinct().sorted(Comparator.comparingInt(Film::countLikes).reversed())
+                .collect(Collectors.toList());
+    }
+
     private List<Film> addDirectorsInFilm(List<Film> films) {
         String sql = "SELECT FD.FILM_ID, FD.DIRECTOR_ID, D.NAME " +
                 "FROM FILM_DIRECTORS AS FD " +

@@ -110,6 +110,25 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
+    public List<Film> searchFilms(String query, boolean searchByTitle, boolean searchByDirector) {
+        return films.values().stream()
+                .filter(film -> {
+                    if (searchByTitle && film.getName().contains(query)) {
+                        return true;
+                    }
+                    if (!searchByDirector) {
+                        return false;
+                    }
+                    for (Director director : film.getDirectors()) {
+                        if (director.getName().contains(query)) {
+                            return true;
+                        }
+                    }
+                    return false;
+                }).sorted(Comparator.comparing(Film::countLikes)).collect(Collectors.toList());
+    }
+
+    @Override
     public List<Film> getFilmsByUserId(int userId) {
         return films.values().stream()
                 .filter(film -> film.getLikes().contains(userId))
