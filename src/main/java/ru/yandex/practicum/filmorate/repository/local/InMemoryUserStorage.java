@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.local.UserException;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.repository.interfaces.UserStorage;
 import ru.yandex.practicum.filmorate.util.IdGenerator;
@@ -100,13 +101,18 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public void delete(int id) {
+    public void delete(Integer id) {
         users.remove(id);
     }
 
     @Override
     public User getById(Integer id) {
         return users.get(id);
+    }
+
+    @Override
+    public List<Event> getLogEvents(Integer userId) {
+        return null;
     }
 
     public void setUserNameByLogin(User user, String text) {

@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.repository.interfaces.UserStorage;
 
@@ -69,7 +70,7 @@ public class UserService {
     }
 
     public List<User> getAllFriends(Integer userId) {
-        checkUser(userId, userId);
+        checkUser(userId);
         List<User> result = storage.getFriendsById(userId);
         log.info("Friends of user with ID = " + userId + result);
         return result;
@@ -78,7 +79,14 @@ public class UserService {
     public List<User> getCommonFriends(Integer userId, Integer friendId) {
         checkUser(userId, friendId);
         List<User> result = storage.getCommonFriends(userId, friendId);
-        log.info("Common friends of users with ID " + " {} and {} {} ", userId, friendId, result);
+        log.info("Common friends of users with ID {} and {} {} ", userId, friendId, result);
+        return result;
+    }
+
+    public List<Event> getLogEvents(Integer userId) {
+        checkUser(userId);
+        List<Event> result = storage.getLogEvents(userId);
+        log.info("Getting user logs. User = " + userId);
         return result;
     }
 
@@ -91,5 +99,9 @@ public class UserService {
     private void checkUser(Integer userId, Integer friendId) {
         storage.getById(userId);
         storage.getById(friendId);
+    }
+
+    private void checkUser(Integer userId) {
+        storage.getById(userId);
     }
 }
