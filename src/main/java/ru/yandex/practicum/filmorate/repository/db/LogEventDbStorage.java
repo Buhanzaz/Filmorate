@@ -12,10 +12,9 @@ public class LogEventDbStorage {
     private final JdbcTemplate jdbcTemplate;
 
     public void logging(Integer userId, EventType eventType, Operation operation, Integer entityId) {
-        String sqlQuery = "INSERT INTO LOG_EVENT(TIMESTAMP, USER_ID, EVENT_TYPE, OPERATION, ENTITY_ID) " +
-                "VALUES ( ?, ?, ?, ?, ? )";
+        String sqlQuery = "INSERT INTO LOG_EVENT(USER_ID, EVENT_TYPE, OPERATION, ENTITY_ID) " +
+                "VALUES (?, ?, ?, ? )";
 
-        jdbcTemplate.update(sqlQuery, System.currentTimeMillis(),
-                userId, eventType.getEventType(), operation.getOperation(), entityId);
+        jdbcTemplate.update(sqlQuery, userId, eventType.getEventType(), operation.getOperation(), entityId);
     }
 }

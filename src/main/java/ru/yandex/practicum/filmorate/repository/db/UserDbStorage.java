@@ -13,6 +13,7 @@ import ru.yandex.practicum.filmorate.repository.enums.EventType;
 import ru.yandex.practicum.filmorate.repository.enums.Operation;
 import ru.yandex.practicum.filmorate.repository.interfaces.UserStorage;
 
+import java.sql.Timestamp;
 import java.util.*;
 
 @Repository
@@ -139,8 +140,10 @@ public class UserDbStorage implements UserStorage {
     }
 
     private static Event logMap(SqlRowSet rowSet) {
+        Timestamp timestamp = rowSet.getTimestamp("timestamp");
+        Long millis = Objects.requireNonNull(timestamp).getTime();
         return Event.builder()
-                .timestamp(rowSet.getLong("timestamp"))
+                .timestamp(millis)
                 .userId(rowSet.getInt("user_id"))
                 .eventType(EventType.valueOf(rowSet.getString("event_type")))
                 .operation(Operation.valueOf(rowSet.getString("operation")))
