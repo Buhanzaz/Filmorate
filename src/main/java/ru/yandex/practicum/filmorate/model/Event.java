@@ -12,7 +12,7 @@ import javax.validation.constraints.Positive;
 @Data
 @AllArgsConstructor
 @Builder
-public class Event {
+public class Event{
     @NotNull
     private Long timestamp;
 
