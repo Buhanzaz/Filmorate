@@ -87,8 +87,8 @@ public class ReviewService {
     public void removeById(Integer id) {
         log.info("Remove REVIEW with ID = {}", id);
         if (reviewStorage.removeById(id) == 0) {
-            log.info("Check if REVIEW with ID = {} exists", id);
-            findById(id);
+            throw new NotFoundException(
+                    String.format("REVIEW with ID = %s does not exists", id));
         }
     }
 
