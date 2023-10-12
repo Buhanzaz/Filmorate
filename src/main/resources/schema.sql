@@ -97,7 +97,7 @@ CREATE TABLE if not exists reviews_likes
 
 CREATE TABLE IF NOT EXISTS log_event
 (
-    user_id    INT                               NOT NULL,
+    user_id    INT                               NOT NULL REFERENCES users (user_id) ON DELETE CASCADE ,
     timestamp  TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     event_type ENUM ('LIKE', 'REVIEW', 'FRIEND') NOT NULL,
     operation  ENUM ('REMOVE', 'ADD', 'UPDATE')  NOT NULL,

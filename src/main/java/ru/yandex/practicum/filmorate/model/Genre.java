@@ -8,16 +8,11 @@ import javax.validation.constraints.Positive;
 
 @Data
 @AllArgsConstructor
-public class Genre implements Comparable<Genre> {
+public class Genre {
 
     @Positive
     protected int id;
 
     @NotBlank
     protected String name;
-
-    @Override
-    public int compareTo(Genre o) {
-        return this.id - o.getId();
-    }
 }

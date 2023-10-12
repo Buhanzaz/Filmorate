@@ -12,6 +12,7 @@ import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.repository.enums.EventType;
 import ru.yandex.practicum.filmorate.repository.enums.Operation;
 import ru.yandex.practicum.filmorate.repository.interfaces.ReviewStorage;
+import ru.yandex.practicum.filmorate.util.LogEventDbStorage;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
