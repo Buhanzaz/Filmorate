@@ -12,6 +12,7 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.repository.enums.EventType;
 import ru.yandex.practicum.filmorate.repository.enums.Operation;
 import ru.yandex.practicum.filmorate.repository.interfaces.UserStorage;
+import ru.yandex.practicum.filmorate.util.LogEventDbStorage;
 
 import java.sql.Timestamp;
 import java.util.*;

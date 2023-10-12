@@ -6,15 +6,13 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.hibernate.validator.constraints.Length;
 import ru.yandex.practicum.filmorate.annotation.AfterDate;
+import ru.yandex.practicum.filmorate.util.GenresComparator;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.PositiveOrZero;
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 
 @Builder(toBuilder = true)
 @Data
@@ -40,7 +38,7 @@ public class Film {
 
     @Builder.Default
     @EqualsAndHashCode.Exclude
-    private SortedSet<Genre> genres = new TreeSet<>();
+    private Set<Genre> genres = new TreeSet<>(new GenresComparator());
     @Builder.Default
     private Set<Director> directors = new HashSet<>();
 

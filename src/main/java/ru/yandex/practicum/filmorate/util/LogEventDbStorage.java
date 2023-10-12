@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.repository.db;
+package ru.yandex.practicum.filmorate.util;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;

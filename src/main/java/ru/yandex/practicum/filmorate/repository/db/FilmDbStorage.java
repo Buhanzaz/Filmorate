@@ -17,6 +17,7 @@ import ru.yandex.practicum.filmorate.model.RatingMpa;
 import ru.yandex.practicum.filmorate.repository.interfaces.FilmStorage;
 import ru.yandex.practicum.filmorate.repository.enums.EventType;
 import ru.yandex.practicum.filmorate.repository.enums.Operation;
+import ru.yandex.practicum.filmorate.util.LogEventDbStorage;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -151,11 +152,11 @@ public class FilmDbStorage implements FilmStorage {
         });
     }
 
-    private SortedSet<Genre> getGenres(int filmId) {
+    private Set<Genre> getGenres(int filmId) {
         String sqlQuery = "SELECT FILM_GENRES.GENRE_ID, GENRES.GENRE FROM FILM_GENRES "
                 + "JOIN GENRES ON GENRES.GENRE_ID = FILM_GENRES.GENRE_ID "
                 + "WHERE FILM_ID = ? ORDER BY GENRE_ID";
-        return new TreeSet<>(jdbcTemplate.query(sqlQuery, this::makeGenre, filmId));
+        return new HashSet<>(jdbcTemplate.query(sqlQuery, this::makeGenre, filmId));
     }
 
     private List<Integer> getLikes(int filmId) {
@@ -384,7 +385,7 @@ public class FilmDbStorage implements FilmStorage {
         int mpaId = srs.getInt("rating_id");
         String mpaName = srs.getString("rating");
         RatingMpa mpa = new RatingMpa(mpaId, mpaName);
-        SortedSet<Genre> genres = getGenres(id);
+        Set<Genre> genres = getGenres(id);
 
         return Film.builder()
                 .id(id)
