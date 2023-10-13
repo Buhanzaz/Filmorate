@@ -8,6 +8,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.repository.db.FilmDbStorage;
@@ -16,10 +17,11 @@ import ru.yandex.practicum.filmorate.repository.db.UserDbStorage;
 
 import java.time.LocalDate;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.TreeSet;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 @AutoConfigureTestDatabase
@@ -43,7 +45,7 @@ class FilmorateApplicationTests {
 				.description("test description")
 				.releaseDate(LocalDate.now().minusYears(40))
 				.duration(180)
-				.genres(new HashSet<>())
+				.genres(new TreeSet<>())
 				.mpa(ratingMpaDbStorage.getRatingMpaById(1))
 				.build();
 
@@ -53,7 +55,7 @@ class FilmorateApplicationTests {
 				.description("test description 2")
 				.releaseDate(LocalDate.now().minusYears(40))
 				.duration(180)
-				.genres(new HashSet<>()).mpa(ratingMpaDbStorage.getRatingMpaById(1))
+				.genres(new TreeSet<>()).mpa(ratingMpaDbStorage.getRatingMpaById(1))
 				.build();
 
 		user = User.builder()
@@ -94,7 +96,7 @@ class FilmorateApplicationTests {
 	void getFilmById_shouldConfirmThatFilmIdExists() {
 		filmDbStorage.create(film);
 
-		assertEquals(filmDbStorage.getById(1).getId(),film.getId());
+		assertEquals(filmDbStorage.getById(1).getId(), film.getId());
 	}
 
 	@Test
@@ -121,5 +123,28 @@ class FilmorateApplicationTests {
 		User userOptional = userDbStorage.getById(1);
 
 		assertEquals(userOptional.getName(), "Eugene");
+	}
+
+	@Test
+	public void deleteUserById_ShouldConfirmThatUsernameHasBeenDeleted() {
+		userDbStorage.create(user);
+		userDbStorage.delete(user.getId());
+		NotFoundException exception = assertThrows(NotFoundException.class, this::execute);
+
+		assertEquals(exception.getMessage(), "User with ID=1 not found!");
+	}
+
+	@Test
+
+	public void deleteFilmById_ShouldConfirmThatUsernameHasBeenDeleted() {
+		filmDbStorage.create(film);
+		filmDbStorage.delete(film.getId());
+		NotFoundException exception = assertThrows(NotFoundException.class, () -> filmDbStorage.getById(film.getId()));
+
+		assertEquals(exception.getMessage(), "Movie with ID = 1 not found!");
+	}
+
+	private void execute() {
+		userDbStorage.getById(user.getId());
 	}
 }

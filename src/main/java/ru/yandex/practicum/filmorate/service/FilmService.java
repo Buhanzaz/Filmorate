@@ -6,23 +6,33 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.repository.interfaces.DirectorStorage;
 import ru.yandex.practicum.filmorate.repository.interfaces.FilmStorage;
 import ru.yandex.practicum.filmorate.repository.interfaces.UserStorage;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 public class FilmService {
     private final UserStorage userStorage;
     private final FilmStorage filmStorage;
+    private final GenreService genreService;
+    private final DirectorStorage directorStorage;
 
     @Autowired
-    public FilmService(@Qualifier("FilmDbStorage") FilmStorage filmStorage, @Qualifier("UserDbStorage") UserStorage userStorage) {
+    public FilmService(@Qualifier("FilmDbStorage") FilmStorage filmStorage,
+                       @Qualifier("UserDbStorage") UserStorage userStorage,
+                       GenreService genreService,
+                       DirectorStorage directorStorage) {
         this.userStorage = userStorage;
         this.filmStorage = filmStorage;
+        this.genreService = genreService;
+        this.directorStorage = directorStorage;
     }
 
     public Collection<Film> getAll() {
@@ -83,8 +93,64 @@ public class FilmService {
         }
     }
 
-    public List<Film> getTopFilm(int volume) {
+    public List<Film> getTopFilm(int count, Integer genreId, Integer year) {
         log.info("Requested a list of popular movies");
-        return new ArrayList<>(filmStorage.getTopFilm(volume));
+        List<Film> topFilms = new ArrayList<>(getAll());
+
+        if (genreId != null) {
+            topFilms = topFilms.stream()
+                    .filter(film -> film.getGenres().contains(genreService.getGenreById(genreId)))
+                    .collect(Collectors.toList());
+        }
+        if (year != null) {
+            topFilms = topFilms.stream()
+                    .filter(film -> film.getReleaseDate().getYear() == year)
+                    .collect(Collectors.toList());
+        }
+
+        return topFilms.stream().sorted(Comparator.comparingInt(Film::countLikes).reversed())
+                .limit(count).collect(Collectors.toList());
+    }
+
+    public List<Film> getDirectorFilm(int directorId, String sortType) {
+        log.info("Requested a list of films of director with id {}, sorted by {}", directorId, sortType);
+        directorStorage.getDirectorById(directorId);
+        switch (sortType) {
+            case "year":
+                return filmStorage.getDirectorFilmsSortedByYear(directorId);
+            case "likes":
+                return filmStorage.getDirectorFilmsSortedByLikes(directorId);
+            default:
+                throw new NotFoundException(String.format("The type of sorting: %s not found", sortType));
+        }
+    }
+
+    public List<Film> getCommonFilms(int userId, int friendId) {
+        userStorage.getById(userId);
+        List<Film> userFilms = filmStorage.getFilmsByUserId(userId);
+
+        userStorage.getById(friendId);
+        List<Film> friendFilms = filmStorage.getFilmsByUserId(friendId);
+
+        return userFilms.stream()
+                .filter(friendFilms::contains)
+                .sorted(Comparator.comparing(Film::countLikes).reversed())
+                .collect(Collectors.toList());
+    }
+
+    public List<Film> searchFilms(String query, String searchBy) {
+        log.info("Requested most popular films, query = {}, searchBy = {}", query, searchBy);
+
+        if (query == null || searchBy == null) {
+            return getTopFilm(Integer.MAX_VALUE, null, null);
+        }
+
+        boolean searchByTitle = searchBy.contains("title");
+        boolean searchByDirector = searchBy.contains("director");
+
+        if (!searchByTitle && !searchByDirector) {
+            throw new NotFoundException(String.format("Search parameters %s not found", searchBy));
+        }
+        return filmStorage.searchFilms(query, searchByTitle, searchByDirector);
     }
 }

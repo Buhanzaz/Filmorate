@@ -1,8 +1,10 @@
 package ru.yandex.practicum.filmorate.repository.interfaces;
 
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.Collection;
+import java.util.List;
 
 public interface UserStorage extends FriendsStorage {
     Collection<User> getAll();
@@ -11,7 +13,9 @@ public interface UserStorage extends FriendsStorage {
 
     User update(User user);
 
-    String delete(int id);
+    void delete(Integer id);
 
     User getById(Integer id);
+
+    List<Event> getLogEvents(Integer userId);
 }

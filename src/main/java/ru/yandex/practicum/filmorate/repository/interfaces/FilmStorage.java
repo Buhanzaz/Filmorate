@@ -4,6 +4,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 public interface FilmStorage extends LikesStorage {
@@ -11,11 +12,19 @@ public interface FilmStorage extends LikesStorage {
 
     Film update(Film film);
 
-    String delete(int id);
+    void delete(int id);
 
     Collection<Film> getAllFilm();
 
     Film getById(Integer id);
 
     void addGenre(int filmId, Set<Genre> genres);
+
+    List<Film> getDirectorFilmsSortedByYear(int directorId);
+
+    List<Film> getRecommendedFilms(int userId);
+
+    List<Film> searchFilms(String query, boolean searchByTitle, boolean searchByDirector);
+
+    List<Film> getFilmsByUserId(int userId);
 }
